@@ -7,7 +7,7 @@
         <div class="col-1 text-right">X</div>
     </div>
     -->
-    <table class="table table-hover data-table">
+    <table class="table table-hover data-table ">
         <tr>
             <th>#</th>
             <th>Symbol</th>
@@ -18,7 +18,7 @@
         {% for stock in data %}
             <tr class="clickable-row" data-href="/stock/{{ stock.symbol }}">
 
-                <td>{{ forloop.counter }}</td>
+                <td>{{ forloop.counter|add:to_add }}</td>
                 <td>{{ stock.symbol }}</td>
                 <td>{{ stock.name }}</td>
                 <td>{{ stock.price|floatformat:2 }}</td>
@@ -33,4 +33,5 @@
             </tr>
         {% endfor %}
     </table>
+
 {% endblock %}
