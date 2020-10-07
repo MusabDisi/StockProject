@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 import wikipedia as wiki
-
+from django.core.paginator import Paginator
 
 # View for the home page - a list of 20 of the most active stocks
 def index(request):
