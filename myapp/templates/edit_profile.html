@@ -10,34 +10,27 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text"> <i class="fa fa-user"></i> </span>
                 </div>
-                <input name="firstname" required class="form-control" placeholder="First name" type="text">
+                <input name="re_firstname" class="form-control" placeholder="First name" type="text">
             </div> <!-- form-group// -->
             <div class="form-group input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text"> <i class="fa fa-user"></i> </span>
                 </div>
-                <input name="lastname" required class="form-control" placeholder="Last name" type="text">
-            </div> <!-- form-group// -->
-            <div class="form-group input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
-                </div>
-                <input name="email" required class="form-control" placeholder="Email address" type="email">
+                <input name="re_lastname" class="form-control" placeholder="Last name" type="text">
             </div> <!-- form-group// -->
             <div class="form-group input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
                 </div>
-                <input name="password" required minlength="4" maxlength="32" class="form-control" placeholder="Create password" type="password">
+                <input name="re_password" minlength="4" maxlength="32" class="form-control" placeholder="Change password" type="password">
             </div> <!-- form-group// -->
             <div class="custom-file">
                 <input name="avatar" type="file" class="custom-file-input" id="validatedCustomFile">
                 <label class="custom-file-label" for="validatedCustomFile">Choose Avatar file...</label>
             </div>
             <div class="form-group" style="">
-                <button type="submit" class="btn btn-primary btn-block"> Create Account</button>
+                <button type="submit" class="btn btn-primary btn-block"> Edit Account</button>
             </div> <!-- form-group// -->
-            <p class="text-center">Have an account? <a href="{% url 'login' %}">Log In</a></p>
         </form>
     </div>
 </div>
