@@ -32,12 +32,14 @@ def register(request):
 		lastname = request.POST.get('lastname')
 		email = request.POST.get('email')
 		password = request.POST.get('password')
-
+		if User.objects.get(username=email):
+			error_message = f'user {email} already exist!'
+			return render(request, 'register.html', {'page_title': 'Register', 'message': error_message})
 		newuser = User.objects.create_user(username=email, email=email, password=password)
 		newuser.first_name = firstname
 		newuser.last_name = lastname
 		newuser.save()
-		if request.FILES['avatar']:
+		if request.FILES and request.POST.get('avatar') and request.FILES['avatar']:
 			avatar =request.FILES['avatar']
 			file_ext = pathlib.Path(avatar.name).suffix
 			new_file_name = str(newuser.id) + file_ext
@@ -70,7 +72,7 @@ def edit_profile(request):
 			user.set_password(password)
 
 		user.save()
-		if request.FILES and request.FILES['avatar']:
+		if request.FILES and request.POST.get('avatar') and request.FILES.get('avatar'):
 			avatar =request.FILES['avatar']
 			fs = FileSystemStorage()
 			file_ext = pathlib.Path(avatar.name).suffix
