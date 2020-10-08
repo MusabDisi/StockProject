@@ -16,7 +16,10 @@ def index(request, page='1'):
         page = request.GET.get('page')
 
     try:  # in case user inters un valid page go to main
-        int(page)
+        if page is not None:
+            int(page)
+        else:
+            page = '1'
     except ValueError:
         page = '1'
 

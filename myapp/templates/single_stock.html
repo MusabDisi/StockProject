@@ -9,7 +9,7 @@
 </div>
 
 <div class="col-md-12 text-left">
-	<p class="lead">{{ data.primaryExchange }}</p>
+	<!-- <p class="lead">{{ data.primaryExchange }}</p> -->
 	<!-- <a href="https://iexcloud.io">Data provided by IEX Cloud</a> -->
 </div>
 
@@ -76,10 +76,10 @@
 					<a class="nav-link disable" data-toggle="pill" href="#5d" role="tab" aria-controls="pills-home"
 						aria-selected="false">5D</a>
 				</li>
-				<li class="nav-item " style="pointer-events:none; opacity:0.6;">
+				<!-- <li class="nav-item " style="pointer-events:none; opacity:0.6;">
 					<a class="nav-link" data-toggle="pill" href="#1w" role="tab" aria-controls="pills-home"
 						aria-selected="false">1W</a>
-				</li>
+				</li> -->
 				<li class="nav-item">
 					<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile"
 						aria-selected="true">1M</a>
@@ -131,7 +131,7 @@
 	var myLineChart = null;
 
 	function getWiki(name) {
-		$.get("/wikiInfo/" + name, function () {
+		$.get("/api/wikiInfo/" + name, function () {
 
 		}).done(function (data) {
 			// console.log(data);
@@ -155,7 +155,7 @@
 		} else {
 			console.log("no cache");
 			$("#loading").show();
-			$.get("/historic/{{ data.symbol }}/" + time_range, function () {
+			$.get("/api/historic/{{ data.symbol }}/" + time_range, function () {
 
 			}).done(function (data) {
 				historic_data = data.data.sort(function (a, b) { return a.date - b.date; })
