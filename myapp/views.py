@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from myapp import stock_api
 from django.conf import settings
-from myapp.models import Stock, UserProfile
+from myapp.models import Stock, UserProfile, FavoriteStock
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
@@ -15,8 +15,19 @@ import pathlib
 def index(request):
 	# Query the stock table, filter for top ranked stocks and order by their rank.
 	data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-	return render(request, 'index.html', {'page_title': 'Main', 'data': data })
+	favorite_stocks = []
+	if request.user.is_authenticated:
+		user = request.user
+		try:
+			favorite_stocks = FavoriteStock.objects.get(user_id = user.id).stocks.values_list('symbol', flat=True).all()
+		except Exception as e:
+			favorite_stocks = []
+	return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'favorite_stocks': favorite_stocks })
 
+def favorite_stock(request):
+	user = request.user
+	data = FavoriteStock.objects.get(user_id = user.id).stocks.order_by('top_rank').all()
+	return render(request, 'fav_stocks.html', {'page_title': 'Favorite Stokes', 'data': data })
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)

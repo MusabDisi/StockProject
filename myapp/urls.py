@@ -3,7 +3,8 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from . import views
+from . import views, views_ajax
+
 
 urlpatterns = [
 	path('', views.index, name='index'),
@@ -13,7 +14,9 @@ urlpatterns = [
 	path('accounts/logout/', views.logout_view, name='logout'),
 	path('accounts/register/', views.register, name='register'),
 	path('accounts/profile/', views.user_profile, name='profile'),
+	path('accounts/favourite_stock/', views.favorite_stock, name='favorite_stock'),
 	path('accounts/edit_profile/', views.edit_profile, name='edit_profile'),
+	path('favstock', views_ajax.fav_stock, name='edit_fav_stock')
 ]
 
 if settings.DEBUG:

@@ -18,7 +18,16 @@
         {% for stock in data %}
             <tr class="clickable-row" data-href="/stock/{{ stock.symbol }}">
 
-                <td>{{ forloop.counter }}</td>
+                <td>
+                {% if   user.is_authenticated %}
+                    {% if  stock.symbol in favorite_stocks  %}
+                        <span id='{{stock.symbol}}' class="fa fa-star fav"></span>
+                    {% else %}
+                        <span id='{{stock.symbol}}' class="fa fa-star-o n-fav"></span>
+                {% endif %}
+                {% endif %}
+                    {{ forloop.counter }}</td>
+
                 <td>{{ stock.symbol }}</td>
                 <td>{{ stock.name }}</td>
                 <td>{{ stock.price|floatformat:2 }}</td>
@@ -34,3 +43,38 @@
         {% endfor %}
     </table>
 {% endblock %}
+
+{% block scripts %}
+<script>
+    $(".fav, .n-fav").click(function (e) {
+        e.preventDefault();
+        var method = 'PUT'
+        console.log($(this).hasClass('fav'))
+
+        let elm = $(this)
+        if (elm.hasClass('fav')) {
+            method = 'DELETE'
+        }
+        $.ajax({
+            url: '{% url 'edit_fav_stock' %}',
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            method: method,
+            data: {
+                'symbol': e.target.id
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (elm.hasClass('fav')) {
+                    elm.removeClass('fa-star fav').addClass('n-fav fa-star-o');
+                }
+                else{
+                    elm.addClass('fa-star fav').removeClass('n-fav fa-star-o');
+                }
+
+                }
+        });
+        e.stopPropagation();
+
+    })
+</script>
+{% endblock scripts %}
