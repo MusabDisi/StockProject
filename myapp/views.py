@@ -32,7 +32,7 @@ def register(request):
 		lastname = request.POST.get('lastname')
 		email = request.POST.get('email')
 		password = request.POST.get('password')
-		if User.objects.get(username=email):
+		if User.objects.filter(username=email):
 			error_message = f'user {email} already exist!'
 			return render(request, 'register.html', {'page_title': 'Register', 'message': error_message})
 		newuser = User.objects.create_user(username=email, email=email, password=password)
