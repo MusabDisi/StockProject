@@ -15,8 +15,8 @@ class Stock(models.Model):
 
 
 class Sector(models.Model):
-    sector_name = models.CharField(max_length=64, primary_key=True)
-    company_symbol = models.CharField(max_length=12)
+    sector_name = models.CharField(max_length=64)
+    company_symbol = models.CharField(max_length=12, primary_key=True)
     company_name = models.CharField(max_length=64)
 
     def __str__(self):
