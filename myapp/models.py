@@ -14,14 +14,15 @@ class Stock(models.Model):
     primary_exchange = models.CharField(null=True, max_length=32)
 
 
-class Sectors(models.Model):
-    sector = models.CharField(max_length=64, primary_key=True)
-    symbol = models.CharField(max_length=12)
-    name = models.CharField(max_length=64)
+class Sector(models.Model):
+    sector_name = models.CharField(max_length=64, primary_key=True)
+    company_symbol = models.CharField(max_length=12)
+    company_name = models.CharField(max_length=64)
 
     def __str__(self):
-        return self.sector
+        return self.sector_name
+
 
 class UserProfile(models.Model):
-    user   = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     avatar = models.CharField(max_length=100)

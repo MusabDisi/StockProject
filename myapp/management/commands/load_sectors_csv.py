@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 
-from myapp.models import Sectors
+from myapp.models import Sector
 from myapp import csv_reader
 from django.core.management.base import BaseCommand
 
@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def load_csv(self):
         rows = csv_reader.read_file()
         for row in rows:
-            sector_obj = Sectors(symbol=row[0], name=row[1], sector=row[2])
+            sector_obj = Sector(company_symbol=row[0], company_name=row[1], sector_name=row[2])
             sector_obj.save()
 
     # ** MAIN TASK **
