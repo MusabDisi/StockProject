@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from myapp import stock_api
 from myapp.models import Stock
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 import wikipedia as wiki
