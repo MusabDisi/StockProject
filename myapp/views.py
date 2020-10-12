@@ -5,24 +5,24 @@ from myapp.models import Stock, UserProfile
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
+import wikipedia as wiki
 from django.core.files.storage import FileSystemStorage
 import pathlib
 
 
 
-
 # View for the home page - a list of 20 of the most active stocks
 def index(request):
-	# Query the stock table, filter for top ranked stocks and order by their rank.
-	data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-	return render(request, 'index.html', {'page_title': 'Main', 'data': data })
+    # Query the stock table, filter for top ranked stocks and order by their rank.
+    data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
+    return render(request, 'index.html', {'page_title': 'Main', 'data': data})
 
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 def single_stock(request, symbol):
-	data = stock_api.get_stock_info(symbol)
-	return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data})
+    data = stock_api.get_stock_info(symbol)
+    return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data})
 
 
 def register(request):
@@ -103,13 +103,21 @@ def change_password(request):
 		return render(request, 'register.html', {'page_title': 'Register'})
 
 def logout_view(request):
-	logout(request)
-	return redirect('index')
+    logout(request)
+    return redirect('index')
 
 
 # API for a stock's price over time
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 # The response is JSON data of an array composed of "snapshot" objects (date + stock info + ...), usually one per day
-def single_stock_historic(request, symbol):
-	data = stock_api.get_stock_historic_prices(symbol, time_range='1m')
-	return JsonResponse({'data': data})
+def single_stock_historic(request, symbol, time_range='1m'):
+    data = stock_api.get_stock_historic_prices(symbol, time_range=time_range)
+    return JsonResponse({'data': data})
+
+
+def get_wiki_info(request, company_name):
+    try:
+        summary = wiki.summary(company_name, sentences=3)
+        return JsonResponse({'summary': summary})
+    except Exception:
+        return JsonResponse({'summary': "Couldn't find information"})

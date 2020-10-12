@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from myapp import stock_api
 
 
-# This class is Django's wy to implement managment commands
+# This class is Django's way to implement management commands
 # You can run it with python manage.py stock_manager
 # It will run 'handle' function
 class Command(BaseCommand):
