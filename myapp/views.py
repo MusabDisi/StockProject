@@ -22,7 +22,12 @@ def index(request):
 
 def search(request):
     search_query = request.GET.get('search_query', '')
-    data = Stock.objects.filter(Q(name__contains=search_query) | Q(symbol__contains=search_query))
+    data = Stock.objects.filter(
+        Q(name__contains=search_query) |
+        Q(symbol__contains=search_query) |
+        Q(price__contains=search_query) |
+        Q(change_percent__contains=search_query)
+    ).order_by('top_rank')
     return get_paginated_homepage(request, data)
 
 
