@@ -38,3 +38,21 @@ body {
 .clickable-row {
     cursor: pointer;
 }
+
+.search_area #search_bar {
+    border-radius: 15px;
+    border: 1px solid #666969;
+    width: 30%;
+    padding: 5px;
+    outline: none;
+    display: inline-block;
+}
+
+.search_area #search_bar:focus {
+    border: 2px solid #2da1fa;
+}
+
+.search_area .dropdown {
+    background-color: red
+    display: inline-block;
+}

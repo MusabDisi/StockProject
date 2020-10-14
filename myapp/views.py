@@ -1,11 +1,13 @@
+import wikipedia as wiki
+from django.contrib.auth import logout
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
+
 from myapp import stock_api
 from myapp.models import Stock
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from django.contrib.auth import logout
-import wikipedia as wiki
-from django.core.paginator import Paginator
 
 
 # View for the home page - a list of 20 of the most active stocks
@@ -32,6 +34,16 @@ def index(request, page='1'):
     to_add = (11 * (int(page) - 1))  # used for numbering the stocks in the list
 
     return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
+
+
+def search(request):
+    search_query = request.GET.get('search_query')
+    if search_query is None:
+        return index(request)
+
+    data = Stock.objects.filter(Q(name__contains=search_query) | Q(symbol__contains=search_query))
+
+    return index(request, '1')
 
 
 # View for the single stock page

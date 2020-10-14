@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('<str:page>/', views.index, name='index'),
     path('', views.index, name='index'),
+    path('search', views.search, name='index'),
     path('stock/<str:symbol>/', views.single_stock, name='single_stock'),
     # path('historic/<str:symbol>/', views.single_stock_historic, name='single_stock_historic'),
     path('api/wikiInfo/<str:company_name>', views.get_wiki_info, name="get_wiki_info"),
