@@ -21,7 +21,7 @@ def index(request):
 
 
 def search(request):
-    search_query = request.GET.get('search_query', '')
+    search_query = request.POST.get('search_query', '')
     data = Stock.objects.filter(Q(name__contains=search_query) | Q(symbol__contains=search_query))
     return get_paginated_homepage(request, data)
 
@@ -31,7 +31,12 @@ def get_paginated_homepage(request, data):
     page = request.GET.get('page', '1')
     data = paginator.get_page(page)
     to_add = (11 * (int(page) - 1))
-    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
+    return render(request, 'index.html', {
+        'page_title': 'Main',
+        'data': data,
+        'to_add': to_add,
+        'search_text': request.POST.get('search_query', '')
+    })
 
 
 # View for the single stock page

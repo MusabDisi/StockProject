@@ -2,3 +2,4 @@
 myapp/.idea/*
 db.sqlite3
 .vscode/*
+/myapp/migrations/0007_auto_20201014_0907.py
