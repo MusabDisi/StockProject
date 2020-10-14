@@ -1,0 +1,4 @@
+*pyc
+myapp/.idea/*
+db.sqlite3
+.vscode/*

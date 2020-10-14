@@ -8,6 +8,15 @@ from django.shortcuts import render, redirect
 
 from myapp import stock_api
 from myapp.models import Stock
+from django.core.paginator import Paginator
+from django.conf import settings
+from myapp.models import Stock, UserProfile
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from django.contrib.auth import logout
+import wikipedia as wiki
+from django.core.files.storage import FileSystemStorage
+import pathlib
 
 
 # View for the home page - a list of 20 of the most active stocks
@@ -44,11 +53,75 @@ def register(request):
         lastname = request.POST.get('lastname')
         email = request.POST.get('email')
         password = request.POST.get('password')
-
+        if User.objects.filter(username=email):
+            error_message = f'user {email} already exist!'
+            return render(request, 'register.html', {'page_title': 'Register', 'message': error_message})
         newuser = User.objects.create_user(username=email, email=email, password=password)
         newuser.first_name = firstname
         newuser.last_name = lastname
         newuser.save()
+        if request.FILES and request.POST.get('avatar') and request.FILES['avatar']:
+            avatar = request.FILES['avatar']
+            file_ext = pathlib.Path(avatar.name).suffix
+            new_file_name = str(newuser.id) + file_ext
+            user_profile = UserProfile(user=newuser, avatar=new_file_name)
+            fs = FileSystemStorage()
+            fs.save(new_file_name, avatar)
+            user_profile.save()
+        return redirect('index')
+    else:
+        # If not post (regular request) -> render register page
+        return render(request, 'register.html', {'page_title': 'Register'})
+
+
+def user_profile(request):
+    if request.user.is_authenticated:
+        user = request.user
+        profile = UserProfile.objects.filter(user_id=user.id)
+        avatar = 'default.png'
+        if profile:
+            avatar = profile[0].avatar
+        return render(request, 'profile.html',
+                      {'page_title': 'User Profile', 'user': user, 'media_url': settings.MEDIA_URL, 'avatar': avatar})
+    return render(request, 'register.html', {'page_title': 'Register'})
+
+
+def edit_profile(request):
+    if request.method == 'POST':
+        user = request.user
+        user.first_name = request.POST.get('re_firstname') or user.first_name
+        user.last_name = request.POST.get('re_lastname') or user.last_name
+        password = request.POST.get('re_password')
+        if password:
+            user.set_password(password)
+
+        user.save()
+        if request.FILES and request.POST.get('avatar') and request.FILES.get('avatar'):
+            avatar = request.FILES['avatar']
+            fs = FileSystemStorage()
+            file_ext = pathlib.Path(avatar.name).suffix
+            new_file_name = str(user.id) + file_ext
+            try:
+                user_profile = UserProfile.objects.get(user_id=user.id)
+                fs.delete(user_profile.avatar)
+                user_profile.avatar = new_file_name
+
+            except Exception:
+                user_profile = UserProfile(user=user, avatar=new_file_name)
+            fs.save(new_file_name, avatar)
+            user_profile.save()
+        return redirect('index')
+    else:
+        # If not post (regular request) -> render register page
+        return render(request, 'edit_profile.html', {'page_title': 'Edit Profile'})
+
+
+def change_password(request):
+    if request.method == 'POST' and request.user.is_authenticated:
+        user = request.user
+        password = request.POST.get('password')
+        user.set_password(password)
+        user.save()
         return redirect('index')
     else:
         # If not post (regular request) -> render register page

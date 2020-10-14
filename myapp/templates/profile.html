@@ -1,0 +1,23 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="pt-4 col-sm-6 pl-5">
+    <dl class="row text-left">
+      <dt class="col-sm-6">First Name</dt>
+      <dd class="col-sm-6">{{ user.first_name }}</dd>
+
+      <dt class="col-sm-6">Last Name</dt>
+      <dd class="col-sm-6">{{ user.last_name }}</dd>
+
+      <dt class="col-sm-6">Email</dt>
+      <dd class="col-sm-6">{{ user.email }}</dd>
+    </dl>
+    <div class="pt-4 col-sm-6 pl-5">
+      <img src="{{media_url}}{{ avatar }}" width="250" height="300" />
+    </div>
+    <div class="pt-4 col-sm-6 pl-5">
+      <a class="btn btn-primary" href={% url 'edit_profile' %} role="button">Edit Profile</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
