@@ -29,7 +29,7 @@ def search(request):
         Q(change_percent__contains=search_query)
     )
 
-    data = data.order_by(request.GET.get('order_by', 'top_ranked'))
+    data = data.order_by(request.GET.get('order_by', 'top_rank'))
 
     if request.GET.get('direction', 'acs') == 'desc':
         data = data.reverse()
@@ -47,7 +47,7 @@ def get_paginated_homepage(request, data):
         'data': data,
         'to_add': to_add,
         'search_text': request.GET.get('search_query', ''),
-        'order_by': request.GET.get('order_by', 'top_ranked'),
+        'order_by': request.GET.get('order_by', 'top_rank'),
         'sector': request.GET.get('sector', 'none'),
         'direction': request.GET.get('direction', 'asc'),
         'url_parameters_builder': url_parameters_builder(request)
@@ -62,7 +62,7 @@ def url_parameters_builder(request):
     result = ''
 
     result += ('search_query={}'.format(request.GET.get('search_query', '')))
-    result += ('&order_by={}'.format(request.GET.get('order_by', 'top_ranked')))
+    result += ('&order_by={}'.format(request.GET.get('order_by', 'top_rank')))
     result += ('&sector={}'.format(request.GET.get('sector', 'none')))
     result += ('&direction={}'.format(request.GET.get('direction', 'asc')))
 

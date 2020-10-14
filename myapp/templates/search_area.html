@@ -23,12 +23,12 @@
 					<div class="form-group col-sm">
 						<label for="columns">Order by</label>
 						<select class="form-control search_menu" id="columns" name="order_by">
-							<option value="top_ranked">Top Ranked</option>
-							<option value="symbol">Symbol</option>
-							<option value="name">Name</option>
-							<option value="price" selected="selected">Price</option>
-							<option value="change">Change</option>
-							<option value="sector">Sector</option>
+							<option value="top_rank">Top Ranked</option>
+							<option value="symbol" {% ifequal order_by 'symbol' %} selected {%endifequal%}>Symbol</option>
+							<option value="name" {% ifequal order_by 'name' %} selected {%endifequal%}>Name</option>
+							<option value="price" {% ifequal order_by 'price' %} selected {%endifequal%}>Price</option>
+							<option value="change" {% ifequal order_by 'change' %} selected {%endifequal%}>Change</option>
+							<option value="sector" {% ifequal order_by 'sector' %} selected {%endifequal%}>Sector</option>
 						</select>
 					</div>
 					
@@ -47,7 +47,7 @@
 						<label for="direction">Direction</label>
 						<select class="form-control search_menu" id="direction" name="direction">
 							<option value="acs">Ascending</option>
-							<option value="desc">Descending</option>
+							<option value="desc" {% ifequal direction 'desc' %} selected {%endifequal%}>Descending</option>
 						</select>
 					</div>
 				</div>
