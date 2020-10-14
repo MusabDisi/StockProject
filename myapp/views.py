@@ -11,39 +11,23 @@ from myapp.models import Stock
 
 
 # View for the home page - a list of 20 of the most active stocks
-def index(request, page='1'):
-    # Query the stock table, filter for top ranked stocks and order by their rank.
-
-    if request.method == 'GET':
-        page = request.GET.get('page')
-
-    try:  # in case user inters un valid page go to main
-        if page is not None:
-            int(page)
-        else:
-            page = '1'
-    except ValueError:
-        page = '1'
-
+def index(request):
     data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-
-    paginator = Paginator(data, 11)
-
-    data = paginator.get_page(page)
-
-    to_add = (11 * (int(page) - 1))  # used for numbering the stocks in the list
-
-    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
+    return get_paginated_homepage(request, data)
 
 
 def search(request):
-    search_query = request.GET.get('search_query')
-    if search_query is None:
-        return index(request)
-
+    search_query = request.GET.get('search_query', '')
     data = Stock.objects.filter(Q(name__contains=search_query) | Q(symbol__contains=search_query))
+    return get_paginated_homepage(request, data)
 
-    return index(request, '1')
+
+def get_paginated_homepage(request, data):
+    paginator = Paginator(data, 11)
+    page = request.GET.get('page', '1')
+    data = paginator.get_page(page)
+    to_add = (11 * (int(page) - 1))
+    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
 
 
 # View for the single stock page
