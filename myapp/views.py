@@ -21,7 +21,7 @@ def index(request):
 
 
 def search(request):
-    search_query = request.POST.get('search_query', '')
+    search_query = request.GET.get('search_query', '')
     data = Stock.objects.filter(Q(name__contains=search_query) | Q(symbol__contains=search_query))
     return get_paginated_homepage(request, data)
 
@@ -35,7 +35,7 @@ def get_paginated_homepage(request, data):
         'page_title': 'Main',
         'data': data,
         'to_add': to_add,
-        'search_text': request.POST.get('search_query', '')
+        'search_text': request.GET.get('search_query', '')
     })
 
 

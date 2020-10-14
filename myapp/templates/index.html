@@ -3,8 +3,7 @@
 {% block content %}
 
 	<div>
-		<form class="search_area" action="search" method="post">
-			{% csrf_token %}
+		<form class="search_area" action="search">
 			<!--Search Bar-->
 			<input type="text" name ="search_query" id="search_bar" placeholder="Search" value="{{ search_text }}">
 		</form>
