@@ -1,22 +1,17 @@
+import pathlib
+
 import wikipedia as wiki
+from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 from myapp import stock_api
-from myapp.models import Stock
-from django.core.paginator import Paginator
-from django.conf import settings
 from myapp.models import Stock, UserProfile
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from django.contrib.auth import logout
-import wikipedia as wiki
-from django.core.files.storage import FileSystemStorage
-import pathlib
 
 
 # View for the home page - a list of 20 of the most active stocks
