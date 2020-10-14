@@ -49,8 +49,8 @@ def url_parameters_builder(request):
     result = ''
 
     # Add search query
-    search_query = request.GET.get('search_query')
-    if search_query is not None and len(search_query) > 0:
+    search_query = request.GET.get('search_query', '')
+    if len(search_query) > 0:
         result += ('search_query=' + search_query)
 
     return result
