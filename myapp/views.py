@@ -35,8 +35,20 @@ def get_paginated_homepage(request, data):
         'page_title': 'Main',
         'data': data,
         'to_add': to_add,
-        'search_text': request.GET.get('search_query', '')
+        'search_text': request.GET.get('search_query', ''),
+        'url_parameters_builder': url_parameters_builder(request)
     })
+
+
+def url_parameters_builder(request):
+    result = ''
+
+    # Add search query
+    search_query = request.GET.get('search_query')
+    if search_query is not None and len(search_query) > 0:
+        result += ('search_query=' + search_query)
+
+    return result
 
 
 # View for the single stock page
