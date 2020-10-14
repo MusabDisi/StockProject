@@ -5,21 +5,58 @@
 		
 		<!-- Advanced search -->
 		<!-- Toggle button -->
-		<button class="btn dark advance_toggle" type="button" data-toggle="collapse"
-		        data-target="#advanced_search_area" aria-controls="advanced_search_area">
+		<a class="btn dark advance_toggle" type="button" data-toggle="collapse"
+		   data-target="#advanced_search_area" aria-controls="advanced_search_area">
 			<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-sliders" fill="black"
 			     xmlns="http://www.w3.org/2000/svg">
 				<path fill-rule="evenodd"
 				      d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
 			</svg>
-		</button>
-		<br>
-		<!-- Expandable area -->
+		</a>
+		
+		<!-- Expandable Area -->
 		<div class="collapse" id="advanced_search_area">
 			<div class="card card-body">
-				Lorem ipsum dolor.
+				
+				<!-- Order By -->
+				<div class="row">
+					<div class="form-group col-sm">
+						<label for="columns">Order by</label>
+						<select class="form-control search_menu" id="columns" name="order_by">
+							<option value="top_ranked">Top Ranked</option>
+							<option value="symbol">Symbol</option>
+							<option value="name">Name</option>
+							<option value="price" selected="selected">Price</option>
+							<option value="change">Change</option>
+							<option value="sector">Sector</option>
+						</select>
+					</div>
+					
+					<div class="form-group col-sm">
+						<label for="sector">Sector</label>
+						<select class="form-control search_menu" id="sector" name="sector">
+							<option value="none">None</option>
+							<option value="tech">Tech</option>
+							<option value="medical">Medical</option>
+							<option value="elec">Electronic</option>
+							<option value="sw">Software</option>
+						</select>
+					</div>
+					
+					<div class="form-group col-sm">
+						<label for="direction">Direction</label>
+						<select class="form-control search_menu" id="direction" name="direction">
+							<option value="acs">Ascending</option>
+							<option value="desc">Descending</option>
+						</select>
+					</div>
+				</div>
+				
+				
+				<button id="search_btn" class="btn btn-primary" type="submit" role="button">Search!</button>
 			</div>
 		</div>
+	
 	
 	</form>
 </div>

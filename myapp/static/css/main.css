@@ -53,15 +53,22 @@ body {
 }
 
 .search_area .dropdown {
-    background-color: red
     display: inline-block;
 }
 
 .search_area {
     padding: 8px;
-    display: inline-bock;
 }
 
 .search_area #advanced_search_area{
         padding: 8px;
+}
+.search_area .search_menu {
+    display: inline-block;
+    width: 50%;
+}
+
+.search_area #search_btn {
+    color: white;
+    width: 20%;
 }
