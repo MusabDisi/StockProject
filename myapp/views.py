@@ -191,6 +191,7 @@ def single_stock_historic(request, symbol, time_range='1m'):
     data = stock_api.get_stock_historic_prices(symbol, time_range=time_range)
     return JsonResponse({'data': data})
 
+
 # call wikipedia api
 # def get_wiki_info(request, company_name):
 #     try:
@@ -208,17 +209,17 @@ def get_company_desc(request, company_symbol):
         print(e)
         return JsonResponse({'summary': "Couldn't find information"})
 
+
 def add_notification(request):
     print('received')
     if request.method == "POST":
         print('posting', request.POST)
         if request.user.is_authenticated:
-            for i in range(20):
-                notification = Notification(user=request.user, operator=request.POST.get('operator').strip()
-                                            , operand=request.POST.get('operand').strip()
-                                            , value=request.POST.get('value').strip()
-                                            , company_symbol=request.POST.get('company_symbol').strip())
-                notification.save()
+            notification = Notification(user=request.user, operator=request.POST.get('operator').strip()
+                                        , operand=request.POST.get('operand').strip()
+                                        , value=request.POST.get('value').strip()
+                                        , company_symbol=request.POST.get('company_symbol').strip())
+            notification.save()
     return HttpResponse(status=204)
 
 
