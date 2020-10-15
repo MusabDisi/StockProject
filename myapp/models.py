@@ -15,13 +15,14 @@ class Stock(models.Model):
     primary_exchange = models.CharField(null=True, max_length=32)
 
 
-class Sector(models.Model):
+class Company(models.Model):
     sector_name = models.CharField(max_length=64)
     company_symbol = models.CharField(max_length=12, primary_key=True)
     company_name = models.CharField(max_length=64)
+    company_desc = models.CharField(max_length=250)
 
     def __str__(self):
-        return self.sector_name
+        return self.company_name
 
 
 class UserProfile(models.Model):
