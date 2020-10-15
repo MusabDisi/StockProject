@@ -129,7 +129,7 @@
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
 <script>
-	getWiki("{{data.companyName}}");
+	getWiki("{{data.symbol}}");
 
 	$(document).ready(function () {
 		getRequest('1M');
@@ -198,11 +198,11 @@
 	var myLineChart = null;
 
 	function getWiki(name) {
-		$.get("/api/wikiInfo/" + name, function () {
+		$.get("/company/get_description/" + name, function () {
 
 		}).done(function (data) {
-			// console.log(data);
-			$("#about-company").html(data.summary + "<a href='https://www.wikipedia.com' style='margin-left:10px;'>by wikipedia</a>");
+			console.log(data);
+			$("#about-company").html(data.summary);
 		}).fail(function () {
 			$("#about-company").text("couldn't find data.");
 		});

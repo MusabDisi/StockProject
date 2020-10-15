@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from myapp import stock_api
 from django.core.paginator import Paginator
 from django.conf import settings
-from myapp.models import Stock, UserProfile, Notification, ReadyNotification
+from myapp.models import Stock, UserProfile, Notification, ReadyNotification, Company
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
@@ -191,14 +191,22 @@ def single_stock_historic(request, symbol, time_range='1m'):
     data = stock_api.get_stock_historic_prices(symbol, time_range=time_range)
     return JsonResponse({'data': data})
 
+# call wikipedia api
+# def get_wiki_info(request, company_name):
+#     try:
+#         summary = wiki.summary(company_name, sentences=3)
+#         return JsonResponse({'summary': summary})
+#     except Exception:
+#         return JsonResponse({'summary': "Couldn't find information"})
 
-def get_wiki_info(request, company_name):
+
+def get_company_desc(request, company_symbol):
     try:
-        summary = wiki.summary(company_name, sentences=3)
-        return JsonResponse({'summary': summary})
-    except Exception:
+        comp = Company.objects.get(company_symbol=company_symbol)
+        return JsonResponse({'summary': comp.company_desc})
+    except Exception as e:
+        print(e)
         return JsonResponse({'summary': "Couldn't find information"})
-
 
 def add_notification(request):
     print('received')

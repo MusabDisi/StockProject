@@ -10,7 +10,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('stock/<str:symbol>/', views.single_stock, name='single_stock'),
     # path('historic/<str:symbol>/', views.single_stock_historic, name='single_stock_historic'),
-    path('api/wikiInfo/<str:company_name>', views.get_wiki_info, name="get_wiki_info"),
+    # path('api/wikiInfo/<str:company_name>', views.get_wiki_info, name="get_wiki_info"),
     path('api/historic/<str:symbol>/<str:time_range>/', views.single_stock_historic, name='single_stock_historic'),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('accounts/logout/', views.logout_view, name='logout'),
@@ -22,6 +22,7 @@ urlpatterns = [
     path('accounts/my_notifications/', views.my_notifications, name='my_notifications'),
     path('notification/delete_active/<str:pk>', views.delete_active_notification, name='delete_active_notification'),
     path('notification/delete_waiting/<str:pk>', views.delete_waiting_notification, name='delete_waiting_notification'),
+    path('company/get_description/<str:company_symbol>', views.get_company_desc, name="get_company_description"),
 ]
 
 if settings.DEBUG:
