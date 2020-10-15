@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row ml-1 mt-2">
+        <h4>Active Notifications</h4>
+    </div>
+    {%if active_notifs.count == 0%}
+    <div class="row ml-3">
+        <h6>- No Active Notifications</h6>
+    </div>
+    {%else%}
+    {%for notif in active_notifs%}
+    <hr style="margin-top: 0.4rem;
+                margin-bottom: 0.4rem;"/>
+    <div class="row ml-2 p-1 align-items-center">
+        <a style="color: red; margin-right: 10px; padding-right: 10px; border-right: 1px solid rgba(0,0,0,.2);" href="{% url 'delete_active_notification' pk=notif.id %}">delete</a> 
+        <h6 style="padding-right: 10px; margin-bottom: 0px;">Change in <a
+                href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a> => {{notif.description}}</h6>
+        <small>{{notif.time}}</small>
+    </div>
+    {%endfor%}
+    {%endif%}
+
+    <div class="row ml-1 mt-2">
+        <h4>Waiting Notifications</h4>
+    </div>
+    {%if waiting_notifs.count == 0%}
+    <div class="row ml-3">
+        <h6>- No Waiting Notifications</h6>
+    </div>
+    {%else%}
+    {%for notif in waiting_notifs%}
+    <hr style="margin-top: 0.4rem;
+                margin-bottom: 0.4rem;"/>
+    <div class="row ml-2 p-1 align-items-center">
+        <a style="color: red; margin-right: 10px; padding-right: 10px; border-right: 1px solid rgba(0,0,0,.2);" href="{% url 'delete_waiting_notification' pk=notif.id %}">delete</a> 
+        <h6 style="margin-bottom: 0px;">For <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
+        </h6>
+        <h6 style="padding-left: 5px; margin-bottom: 0px;">Notify me when <span style="color: tomato;">{{notif.operand}}</span> is {{notif.operator}} than <span
+            style="color: tomato;">{{notif.value}}</span></h6>
+    </div>
+    {%endfor%}
+    {%endif%}
+</div>
+{% endblock %}

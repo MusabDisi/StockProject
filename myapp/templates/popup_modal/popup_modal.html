@@ -1,0 +1,54 @@
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="row justify-content-end pr-4">
+            <span class="close">&times;</span>
+        </div>
+        <div class="row justify-content-start pl-4">
+            <h3>Notify me when:</h3>
+        </div>
+        <hr style="margin-top: 0.2rem;
+                    margin-bottom: 0.2rem;
+                    color:rgba(0, 0, 0, 0.6)" />  
+        <div id = "high-row" class="row justify-content-center align-items-center pt-1 disabled_row">
+            <div class="col-md-1">
+                <input type="checkbox" id="high-checkbox">
+            </div>
+            <div class="col-md-3">
+                <h4>High</h4>
+            </div>
+            <div class="col-md-3">
+                {% include 'popup_modal/select.html'%}
+            </div>
+            <div class="col-md-3">
+                <input id="high" type="number" style="width: 80px;" class="form-control" maxlength="5">
+            </div>
+        </div>
+        <div id = "low-row" class="row justify-content-center align-items-center pt-2 disabled_row">
+            <div class="col-md-1">
+                <input type="checkbox" id="low-checkbox">
+            </div>
+            <div class="col-md-3">
+                <h4>Low</h4>
+            </div>
+            <div class="col-md-3">
+                {% include 'popup_modal/select.html'%}
+            </div>
+            <div class="col-md-3">
+                <input id="low" type="number" style="width: 80px;" class="form-control" maxlength="5">
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-center pt-4" >
+            <!-- <div class="col-md-12"> -->
+                <!-- <button id="delete" type="button" class="btn btn-outline-danger mr-2">Delete</button> -->
+            <button id="submit" type="button" class="btn btn-primary w-100 mr-4 ml-4 ">Submit</button>
+            <!-- </div> -->
+            <!-- <div class="col-md-3">
+                <a id="cancel"  href = "#" style="color: red;">Cancel</a>
+            </div> -->
+            
+        </div>
+    </div>
+</div>

@@ -1,19 +1,27 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from myapp import stock_api
 from django.core.paginator import Paginator
 from django.conf import settings
-from myapp.models import Stock, UserProfile
+from myapp.models import Stock, UserProfile, Notification, ReadyNotification
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
 import wikipedia as wiki
 from django.core.files.storage import FileSystemStorage
 import pathlib
+from django.utils.timezone import now
+from asgiref.sync import sync_to_async
 
 
 # View for the home page - a list of 20 of the most active stocks
 def index(request, page='1'):
     # Query the stock table, filter for top ranked stocks and order by their rank.
+    print('...... index called')
+    notifications = ''
+    if request.user.is_authenticated:
+        set_active_notifications(request.user)
+        notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')[:5]  # only recent 5
+        # notifications = ReadyNotification.objects.filter(user=request.user)
 
     if request.method == 'GET':
         page = request.GET.get('page')
@@ -34,13 +42,58 @@ def index(request, page='1'):
 
     to_add = (11 * (int(page) - 1))  # used for numbering the stocks in the list
 
-    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
+    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add,
+                                          'notifications': notifications})
+
+
+def get_value_of(symbol, operand):
+    return stock_api.get_stock_info_notification(symbol, operand)
+
+
+def is_bigger(value, api_value):
+    return api_value > value
+
+
+def is_lower(value, api_value):
+    return api_value < value
+
+
+def is_equal(value, api_value):
+    return api_value == value
+
+
+# loops over Notification table and check if any notification must be triggered
+# if yes add it to ReadyNotification table
+def set_active_notifications(user):
+    notifications = Notification.objects.filter(user=user)
+    operators = {'bigger': is_bigger, 'lower': is_lower, 'equal': is_equal}
+    for notification in notifications:
+        time_now = now()
+        should_check = (((time_now - notification.last_checked).seconds // 60 % 60) >= 0)  # check if 10 mins passed
+        if should_check:
+            key = notification.operand
+            symbol = notification.company_symbol
+            api_value = get_value_of(symbol, key)
+            operator = notification.operator
+            value = notification.value
+            if api_value[key] is None:
+                api_value = 0
+            else:
+                api_value = api_value[key]
+            should_activate = operators[operator](value, api_value)
+            if should_activate:
+                description = key + ' is ' + operator + ' than ' + str(value)
+                rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
+                rn.save()
+                notification.delete()
 
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 def single_stock(request, symbol):
     data = stock_api.get_stock_info(symbol)
+    # high = check_if_notification_set(request.user, symbol, 'high')
+    # low = check_if_notification_set(request.user, symbol, 'low')
     return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data})
 
 
@@ -145,3 +198,48 @@ def get_wiki_info(request, company_name):
         return JsonResponse({'summary': summary})
     except Exception:
         return JsonResponse({'summary': "Couldn't find information"})
+
+
+def add_notification(request):
+    print('received')
+    if request.method == "POST":
+        print('posting', request.POST)
+        if request.user.is_authenticated:
+            for i in range(20):
+                notification = Notification(user=request.user, operator=request.POST.get('operator').strip()
+                                            , operand=request.POST.get('operand').strip()
+                                            , value=request.POST.get('value').strip()
+                                            , company_symbol=request.POST.get('company_symbol').strip())
+                notification.save()
+    return HttpResponse(status=204)
+
+
+def my_notifications(request):
+    waiting_notifs = Notification.objects.filter(user=request.user)
+    active_notifs = ReadyNotification.objects.filter(user=request.user)
+    context = {
+        'waiting_notifs': waiting_notifs,
+        'active_notifs': active_notifs,
+    }
+    return render(request, 'my_notifications.html', context)
+
+
+def delete_active_notification(request, pk='-1'):
+    print('delete active')
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = ReadyNotification.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')
+
+
+def delete_waiting_notification(request, pk='-1'):
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = Notification.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')

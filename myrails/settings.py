@@ -125,3 +125,5 @@ LOGIN_REDIRECT_URL = '/'
 
 MEDIA_URL = 'myapp/static/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'myapp/static/media')
+
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"

@@ -78,3 +78,9 @@ def get_stock_info(symbol):
 def get_stock_historic_prices(symbol, time_range='1m'):
     return _request_data_sandbox('/stable/stock/{symbol}/chart/{time_range}'
                                  .format(symbol=symbol, time_range=time_range))
+
+
+def get_stock_info_notification(symbol, operand):
+    return _request_data_sandbox('/stable/stock/{symbol}/quote'.format(symbol=symbol),
+                                 additional_parameters={'displayPercent': 'true'},
+                                 filter=operand)

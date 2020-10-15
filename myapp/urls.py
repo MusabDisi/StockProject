@@ -18,6 +18,10 @@ urlpatterns = [
     path('accounts/register/', views.register, name='register'),
     path('accounts/profile/', views.user_profile, name='profile'),
     path('accounts/edit_profile/', views.edit_profile, name='edit_profile'),
+    path('notification/add/', views.add_notification, name='notification'),  # add notification to db
+    path('accounts/my_notifications/', views.my_notifications, name='my_notifications'),
+    path('notification/delete_active/<str:pk>', views.delete_active_notification, name='delete_active_notification'),
+    path('notification/delete_waiting/<str:pk>', views.delete_waiting_notification, name='delete_waiting_notification'),
 ]
 
 if settings.DEBUG:

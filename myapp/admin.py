@@ -5,3 +5,5 @@ from .models import *
 admin.site.register(Stock)
 admin.site.register(UserProfile)
 admin.site.register(Sector)
+admin.site.register(Notification)
+admin.site.register(ReadyNotification)
