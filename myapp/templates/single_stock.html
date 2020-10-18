@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Stock title-->
 <div class="col-md-12 text-left">
 	<h2 class="display-4">
 		{{ data.companyName }}
@@ -8,11 +9,7 @@
 	</h2>
 </div>
 
-<div class="col-md-12 text-left">
-	<!-- <p class="lead">{{ data.primaryExchange }}</p> -->
-	<!-- <a href="https://iexcloud.io">Data provided by IEX Cloud</a> -->
-</div>
-
+<!-- Price section -->
 <div class="col-md-12 text-left">
 	<span class="lead">
 		<big>
@@ -31,38 +28,39 @@
 </div>
 
 <div class="row align-items-center" style="height: 400px;">
+	<!-- Details section -->
 	<div class="pt-4 col-sm-6 pl-5">
 		<dl class="row text-left">
 			<dt class="col-sm-6">Open</dt>
 			<dd class="col-sm-6">{{ data.open }}</dd>
-
+			
 			<dt class="col-sm-6">High</dt>
 			<dd class="col-sm-6">{{ data.high }}</dd>
-
+			
 			<dt class="col-sm-6">Low</dt>
 			<dd class="col-sm-6">{{ data.low }}</dd>
-
+			
 			<dt class="col-sm-6">Previous Close</dt>
 			<dd class="col-sm-6">{{ data.previousClose }}</dd>
-
+			
 			<dt class="col-sm-6">Volume</dt>
 			<dd class="col-sm-6">{{ data.volume }}
 			</dd>
-
+			
 			<dt class="col-sm-6">52 Weeks Low</dt>
 			<dd class="col-sm-6">{{ data.week52Low }}</dd>
-
+			
 			<dt class="col-sm-6">52 Weeks High</dt>
 			<dd class="col-sm-6">{{ data.week52High }}</dd>
-
+			
 			<dt class="col-sm-6">Year Change</dt>
 			<dd class="col-sm-6">{{ data.ytdChange }}</dd>
-
+			
 			<dt class="col-sm-6">Market Cap</dt>
 			<dd class="col-sm-6">{{ data.marketCap }}</dd>
 		</dl>
 	</div>
-
+	<!-- Chart section -->
 	<div class="pt-4 col-sm-6 ">
 		<h6 id="loading">Loading graph...</h6>
 		<canvas id="stockChart"></canvas>
@@ -70,11 +68,11 @@
 			<ul class="nav nav-pills mb-3 mt-2" id="pills-tab" role="tablist" style="visibility: hidden;">
 				<li class="nav-item">
 					<a class="nav-link disable" data-toggle="pill" href="#1d" role="tab" aria-controls="pills-home"
-						aria-selected="false">1D</a>
+					   aria-selected="false">1D</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link disable" data-toggle="pill" href="#5d" role="tab" aria-controls="pills-home"
-						aria-selected="false">5D</a>
+					   aria-selected="false">5D</a>
 				</li>
 				<!-- <li class="nav-item " style="pointer-events:none; opacity:0.6;">
 					<a class="nav-link" data-toggle="pill" href="#1w" role="tab" aria-controls="pills-home"
@@ -82,29 +80,29 @@
 				</li> -->
 				<li class="nav-item">
 					<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile"
-						aria-selected="true">1M</a>
+					   aria-selected="true">1M</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" data-toggle="pill" href="#3m" role="tab" aria-controls="pills-contact"
-						aria-selected="false">3M</a>
+					   aria-selected="false">3M</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" data-toggle="pill" href="#6m" role="tab" aria-controls="pills-contact"
-						aria-selected="false">6M</a>
+					   aria-selected="false">6M</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" data-toggle="pill" href="#1y" role="tab" aria-controls="pills-contact"
-						aria-selected="false">1Y</a>
+					   aria-selected="false">1Y</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" data-toggle="pill" href="#max" role="tab" aria-controls="pills-contact"
-						aria-selected="false">Max</a>
+					   aria-selected="false">Max</a>
 				</li>
 			</ul>
 		</div>
 	</div>
 </div>
-<!-- <div class="dropdown-divider"></div> -->
+<!-- About the company -->
 <div class="row justify-content-start pl-4">
 	<h4>About Company</h4>
 </div>
