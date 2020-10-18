@@ -4,10 +4,10 @@ import requests
 BASE_URL_SANDBOX = 'https://sandbox.iexapis.com'
 PUBLIC_TOKEN_SANDBOX = 'Tpk_31522a5f3a3f40c5a08af821908adf96'
 
+
 # Real API - FOR PRODUCTION
-# YOU NEED TO CREATE AN ACCOUNT TO RECEIVE YOUR OWN API KEYS (its free)
-BASE_URL = 'https://cloud.iexapis.com'
-PUBLIC_TOKEN = 'pk_5169755953b14b5d98b0ba75724327a4'
+# BASE_URL = 'https://cloud.iexapis.com'
+# PUBLIC_TOKEN = 'pk_5169755953b14b5d98b0ba75724327a4'
 
 
 # For general info for all symbols
@@ -18,11 +18,11 @@ PUBLIC_TOKEN = 'pk_5169755953b14b5d98b0ba75724327a4'
 # For all symbols with prices (*free weight*)
 # https://cloud.iexapis.com/stable/tops/last?token=pk_dd07f5a1aaea4a039cfe8118f3d9727a
 def _request_data(url, filter='', additional_parameters={}):
-    print("requested real data from api")
-    final_url = BASE_URL + url
+    # print("requested real data from api")
+    final_url = BASE_URL_SANDBOX + url
 
     query_strings = {
-        'token': PUBLIC_TOKEN
+        'token': PUBLIC_TOKEN_SANDBOX
     }
     query_strings.update(additional_parameters)
 
@@ -70,11 +70,14 @@ def _get_top_stocks():
 
 
 def get_stock_info(symbol):
-    # 'symbol,companyName,marketcap,totalCash,primaryExchange,latestPrice,latestSource,change,changePercent'
+    # 'symbol,companyName,marketCap,totalCash,primaryExchange,latestPrice,latestSource,change,changePercent'
     return _request_data_sandbox('/stable/stock/{symbol}/quote'.format(symbol=symbol),
                                  additional_parameters={'displayPercent': 'true'})
 
 
+# Range must be in ['max', '5y', '2y', '1y', 'ytd', '6m', '3m',
+#                  '1m', '1mm', '5d', '5dm', '1d', 'dynamic']
+# more info at https://iexcloud.io/docs/api/#historical-prices
 def get_stock_historic_prices(symbol, time_range='1m'):
     return _request_data_sandbox('/stable/stock/{symbol}/chart/{time_range}'
                                  .format(symbol=symbol, time_range=time_range))

@@ -30,6 +30,15 @@ class UserProfile(models.Model):
     avatar = models.CharField(max_length=100)
 
 
+class Track(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    operand = models.IntegerField()  # high 1 or low -1
+    state = models.IntegerField()  # increasing 1 or decreasing -1
+    days = models.IntegerField()
+    company_symbol = models.CharField(max_length=12)
+    creation_time = models.DateTimeField(default=now)
+
+
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     operand = models.CharField(max_length=12)  # high or low ..

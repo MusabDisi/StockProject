@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, HttpResponse
 from myapp import stock_api
 from django.core.paginator import Paginator
 from django.conf import settings
-from myapp.models import Stock, UserProfile, Notification, ReadyNotification, Company
+from myapp.models import Stock, UserProfile, Notification, ReadyNotification, Company, Track
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
-import wikipedia as wiki
+# import wikipedia as wiki
 from django.core.files.storage import FileSystemStorage
 import pathlib
 from django.utils.timezone import now
@@ -21,7 +21,7 @@ def index(request, page='1'):
     if request.user.is_authenticated:
         set_active_notifications(request.user)
         notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')[:5]  # only recent 5
-        # notifications = ReadyNotification.objects.filter(user=request.user)
+        # popup_modals = ReadyNotification.objects.filter(user=request.user)
 
     if request.method == 'GET':
         page = request.GET.get('page')
@@ -86,6 +86,9 @@ def set_active_notifications(user):
                 rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
                 rn.save()
                 notification.delete()
+            else:
+                notification.last_checked = now()
+                notification.save()
 
 
 # View for the single stock page
@@ -252,3 +255,14 @@ def delete_waiting_notification(request, pk='-1'):
                 n.delete()
 
     return redirect('my_notifications')
+
+
+def add_tracking(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            post = request.POST
+            print(post)
+            track = Track(user=request.user, operand=int(post.get('operand')), state=int(post.get('state'))
+                          , days=int(post.get('days')), company_symbol=post.get('company_symbol'))
+            track.save()
+    return HttpResponse(status=204)

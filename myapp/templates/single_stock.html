@@ -5,14 +5,17 @@
 	<div class="col-9 col-md-9 text-left">
 		<h2 class="display-4">
 			{{ data.companyName }}
-			<small class="text-muted">({{ data.symbol }})</small>
+			<small id="symbol" class="text-muted">({{ data.symbol }})</small>
 		</h2>
 	</div>
 	<div class="col-md-3" style="float: right !important;">
-		<button id="open-modal" type="button" class="btn btn-outline-info rounded-pill mr-2 mt-2"
-			style="width: 100px;">Notify Me</button>
+		<button id="open-modal" type="button" class="btn btn-outline-info  mr-2 mt-2" style="width: 100px;">Notify
+			Me</button>
+		<button id="track" type="button" class="btn btn-outline-secondary  mr-2 mt-2"
+			style="width: 100px;">Track</button>
 		<!-- <button type="button" class="btn btn-outline-warning rounded-pill mt-2" style="width: 100px;">favorite</button> -->
 		{%include 'popup_modal/popup_modal.html'%}
+		{%include 'popup_modal/popup_modal_track.html'%}
 	</div>
 
 </div>
@@ -28,9 +31,9 @@
 			{{ data.latestPrice }}
 			<small class="lead">
 				{% if data.changePercent >= 0 %}
-				<span class="text-success">+{{ data.change }} (+{{ data.changePercent }}%)</span>
+				<span class="text-success">+{{ data.change }} (+{{ data.changePercent|floatformat:4 }}%)</span>
 				{% else %}
-				<span class="text-danger">{{ data.change }} ({{ data.changePercent }}%)</span>
+				<span class="text-danger">{{ data.change }} ({{ data.changePercent|floatformat:4 }}%)</span>
 				{% endif %}
 			</small>
 		</big>
@@ -48,10 +51,10 @@
 			<dd class="col-sm-6">{{ data.open }}</dd>
 
 			<dt class="col-sm-6">High</dt>
-			<dd class="col-sm-6">{{ data.high }}</dd>
+			<dd id="dd-high" class="col-sm-6">{{ data.high }}</dd>
 
 			<dt class="col-sm-6">Low</dt>
-			<dd class="col-sm-6">{{ data.low }}</dd>
+			<dd id="dd-low" class="col-sm-6">{{ data.low }}</dd>
 
 			<dt class="col-sm-6">Previous Close</dt>
 			<dd class="col-sm-6">{{ data.previousClose }}</dd>
@@ -124,18 +127,78 @@
 </div>
 {% endblock %}
 
+
+{% load static %}
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+
+<!-- Track modal -->
 <script>
-	getWiki("{{data.symbol}}");
+
+	let CSRFtoken = "{{csrf_token}}";
+	let symbol = "{{data.symbol}}";
 
 	$(document).ready(function () {
-		getRequest('1M');
-		$("ul li a").on("click", function () {
-			onTimeRangeClicked(this.innerText);
+		$("#track").click(openTrackModal);
+		$(".close").click(closeTrackModal);
+		$("#submit-track").click(submitTrackingModal);
+	});
+
+	function submitTrackingModal(){
+		let days = parseInt($("#days").val());
+		let operand = $("input[name='operandGroupRadio']:checked").attr("id");
+		let state = $("input[name='stateGroupRadio']:checked").attr("id");
+
+		if(isNaN(days) || days < 0 || days > 99){
+			$("#warning").css({display: 'inline'});
+			return;
+		}
+
+		if(operand == 'high-rd'){
+			operand = 1;
+		}else{
+			operand = -1;
+		}
+
+		if(state == 'increasing-rd'){
+			state = 1;
+		}else{
+			state = -1;
+		}
+
+		console.log( 'days ' + days + 'operand ' + operand + ' state ' + state);
+		postTracking(state, operand, days);
+		closeTrackModal();
+	}
+
+	function postTracking(stateVal, operandVal, daysVal) {
+		$.post("/tracking/add/", {
+			csrfmiddlewaretoken: CSRFtoken, state: stateVal,
+			operand: operandVal, days: daysVal, company_symbol: symbol
+		}, function () {
+			console.log("tracking submited successfully");
 		})
+			.fail(function () {
+				console.log("tracking modal submission error");
+			})
+	}
+
+	function closeTrackModal() {
+		$("#track-modal").css({ display: 'none' });
+	}
+
+	function openTrackModal() {
+		console.log("track")
+		$("#track-modal").css({ display: 'block' });
+	}
+
+</script>
+<!-- Notifications modal -->
+<script>
+	$(document).ready(function () {
+		// Notifications modal
 		$("#open-modal").click(openModal);
 		$(".close").click(closeModal);
 		$("#submit").click(submitModal);
@@ -148,10 +211,10 @@
 	});
 
 	function postNotification(operatorVal, operandVal, val) {
-		let CSRFtoken = "{{csrf_token}}";
-		let symbol = "{{data.symbol}}";
-		$.post("/notification/add/", { csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
-		 operand: operandVal, value: val, company_symbol: symbol }, function () {
+		$.post("/notification/add/", {
+			csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
+			operand: operandVal, value: val, company_symbol: symbol
+		}, function () {
 			console.log("submited successfully");
 		})
 			.fail(function (e) {
@@ -193,6 +256,72 @@
 		$("#low").val(parseFloat(low));
 
 	}
+</script>
+<script>
+	getWiki("{{data.symbol}}");
+
+	$(document).ready(function () {
+		getRequest('1M');
+		$("ul li a").on("click", function () {
+			onTimeRangeClicked(this.innerText);
+		})
+		// $("#open-modal").click(openModal);
+		// $(".close").click(closeModal);
+		// $("#submit").click(submitModal);
+		// $('#low-checkbox').click(function () {
+		// 	$("#low-row").toggleClass('disabled_row');
+		// });
+		// $('#high-checkbox').click(function () {
+		// 	$("#high-row").toggleClass('disabled_row');
+		// });
+	});
+
+	// function postNotification(operatorVal, operandVal, val) {
+	// 	let CSRFtoken = "{{csrf_token}}";
+	// 	let symbol = "{{data.symbol}}";
+	// 	$.post("/notification/add/", { csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
+	// 	 operand: operandVal, value: val, company_symbol: symbol }, function () {
+	// 		console.log("submited successfully");
+	// 	})
+	// 		.fail(function (e) {
+	// 			console.log("modal submission error");
+	// 		})
+	// }
+
+	// function submitModal() {
+	// 	let operatorVal = $("#select-operator").val();
+	// 	let highVal = $("#high").val();
+	// 	let lowVal = $("#low").val();
+
+	// 	if ($("#low-checkbox").is(':checked')) {
+	// 		postNotification(operatorVal, 'low', lowVal)
+	// 	}
+	// 	if ($("#high-checkbox").is(':checked')) {
+	// 		postNotification(operatorVal, 'high', highVal)
+	// 	}
+
+	// 	closeModal();
+	// }
+
+	// function closeModal() {
+	// 	$("#myModal").css({ display: 'none' });
+	// }
+
+	// function openModal() {
+
+	// 	let high = "{{ data.high }}";
+	// 	let low = "{{ data.low }}";
+
+	// 	if (high == 'None')
+	// 		high = '0';
+	// 	if (low == 'None')
+	// 		low = '0';
+
+	// 	$("#myModal").css({ display: 'block' });
+	// 	$("#high").val(parseFloat(high));
+	// 	$("#low").val(parseFloat(low));
+
+	// }
 
 	let mycache = {};
 	var myLineChart = null;
