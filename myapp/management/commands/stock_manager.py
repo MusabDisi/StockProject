@@ -1,6 +1,7 @@
 from myapp.models import Stock
 from django.core.management.base import BaseCommand
 from myapp import stock_api
+from myapp.management.functions import progressBar
 
 
 # This class is Django's way to implement management commands
@@ -8,10 +9,11 @@ from myapp import stock_api
 # It will run 'handle' function
 class Command(BaseCommand):
     def update_top_stocks(self):
+        print('requesting data from api ...')
         top_stocks = stock_api._get_top_stocks()
-
+        print('loading received data to db.')
         index = 1
-        for stock in top_stocks:
+        for stock in progressBar(top_stocks, '    Loading', 'Complete'):
             # This searches for a stock with the given 'symbol' (the primary key)
             # and updates/create it with the values specified in the 'defaults' parameter
             stock_model, created = Stock.objects.update_or_create(symbol=stock['symbol'], defaults={
