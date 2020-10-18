@@ -74,10 +74,6 @@
 					<a class="nav-link disable" data-toggle="pill" href="#5d" role="tab" aria-controls="pills-home"
 					   aria-selected="false">5D</a>
 				</li>
-				<!-- <li class="nav-item " style="pointer-events:none; opacity:0.6;">
-					<a class="nav-link" data-toggle="pill" href="#1w" role="tab" aria-controls="pills-home"
-						aria-selected="false">1W</a>
-				</li> -->
 				<li class="nav-item">
 					<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile"
 					   aria-selected="true">1M</a>
@@ -121,7 +117,7 @@
 	$(document).ready(function () {
 		getRequest('1M');
 		$("ul li a").on("click", function () {
-			onTimeRangeClicked(this.innerText);
+			getRequest(this.innerText);
 		})
 	});
 
@@ -137,11 +133,6 @@
 		}).fail(function () {
 			$("#about-company").text("couldn't find data.");
 		});
-	}
-
-	function onTimeRangeClicked(range) {
-		getRequest(range);
-
 	}
 
 	function getRequest(time_range) {
