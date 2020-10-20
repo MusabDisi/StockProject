@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('compare', views.compare, name='compare'),
     path('search', views.search, name='index'),
     path('stock/<str:symbol>/', views.single_stock, name='single_stock'),
     path('api/wikiInfo/<str:company_name>', views.get_wiki_info, name="get_wiki_info"),

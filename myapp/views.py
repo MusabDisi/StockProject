@@ -37,6 +37,10 @@ def search(request):
     return get_paginated_homepage(request, data)
 
 
+def compare(request):
+    return render(request, 'compare.html')
+
+
 def get_paginated_homepage(request, data):
     paginator = Paginator(data, 11)
     page = request.GET.get('page', '1')
