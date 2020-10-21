@@ -38,7 +38,7 @@ def search(request):
 
 
 def compare(request):
-    return render(request, 'compare.html')
+    return render(request, 'compare.html', {'stock_1': 'aapl', 'stock_2': 'drh'})
 
 
 def get_paginated_homepage(request, data):

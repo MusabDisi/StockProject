@@ -1,12 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Compare Stocks</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
 
-<h1>assad</h1>
 
-</body>
-</html>
+<div class="chart">
+	<h1>{{ stock_1 }}</h1>
+	<h1>{{ stock_2 }}</h1>
+	
+	
+	<!-- Chart section -->
+	<div class="pt-4 col-sm-6 ">
+		<h6 id="loading">Loading graph...</h6>
+		<canvas id="stockChart"></canvas>
+		<div class="row justify-content-center">
+			<ul class="nav nav-pills mb-3 mt-2" id="pills-tab" role="tablist" style="visibility: hidden;">
+				<li class="nav-item">
+					<a class="nav-link disable" data-toggle="pill" href="#1d" role="tab" aria-controls="pills-home"
+					   aria-selected="false">1D</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link disable" data-toggle="pill" href="#5d" role="tab" aria-controls="pills-home"
+					   aria-selected="false">5D</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile"
+					   aria-selected="true">1M</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#3m" role="tab" aria-controls="pills-contact"
+					   aria-selected="false">3M</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#6m" role="tab" aria-controls="pills-contact"
+					   aria-selected="false">6M</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#1y" role="tab" aria-controls="pills-contact"
+					   aria-selected="false">1Y</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#max" role="tab" aria-controls="pills-contact"
+					   aria-selected="false">Max</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}
+
+<script>
+	$(document).ready(function () {
+		getRequest('1M');
+		$("ul li a").on("click", function () {
+			getRequest(this.innerText);
+		})
+	});
+
+	let mycache = {};
+	var myLineChart = null;
+
+	function getRequest(time_range) {
+		console.log(time_range);
+		if (time_range in mycache) { // if we already called api and value is saved
+			console.log("from cache");
+			$("#loading").hide();
+			drawChart(mycache[time_range], "{{ data.symbol }}");
+		} else {
+			console.log("no cache");
+			$("#loading").show();
+			$.get("/api/historic/{{ stock_1 }}/" + time_range, function () {
+
+			}).done(function (data) {
+				historic_data = data.data.sort(function (a, b) { return a.date - b.date; })
+				mycache[time_range] = historic_data;
+				drawChart(historic_data, "{{ data.symbol }}");
+				$("#loading").hide();
+			}).fail(function () {
+				$("#loading").hide();
+				console.log("failed");
+			});
+		}
+
+	}
+
+	function addData(chart, label, data) {
+		chart.data.labels.push(label);
+		chart.data.datasets.forEach((dataset) => {
+			dataset.data.push(data);
+		});
+		chart.update();
+	}
+
+	function removeData(chart) {
+		chart.data.labels.pop();
+		chart.data.datasets.forEach((dataset) => {
+			dataset.data.pop();
+		});
+		chart.update();
+	}
+
+	function drawChart(data, symbol) {
+		// $("#stockChart").remove();
+		// $("#for-canvas").append("<canvas id='stockChart'></canvas>")
+		console.log(data);
+		var canvas = document.getElementById("stockChart");
+		let ctxL = canvas.getContext('2d');
+		let data_labels = data.map(d => d.label);
+		let data_mapped = data.map(d => d.close);
+		console.log(data_mapped[0]);
+		console.log(data_mapped[data_mapped.length - 1]);
+		
+		let border = '';
+		let background = '';
+		if (data_mapped[0] > data_mapped[data_mapped.length - 1]) { // if stock is falling
+			border = 'rgb(254, 45, 0)';
+			background = 'rgba(254, 232, 232, .6)';
+		} else {
+			border = 'rgb(15, 157, 88)';
+			background = 'rgba(232, 254, 235, .6)';
+		}
+		// ctxL.clearRect(0, 0, canvas.width, canvas.height);
+		if (myLineChart != null) {
+			myLineChart.data.labels = data_labels;
+			myLineChart.data.datasets[0].data = data_mapped;
+			myLineChart.data.datasets[0].borderColor = border;
+			myLineChart.data.datasets[0].pointBackgroundColor = border;
+			// myLineChart.data.datasets[0].pointHoverBackgroundColor = border;
+			// myLineChart.data.datasets[0].pointHoverBorderColor = border;
+			myLineChart.data.datasets[0].backgroundColor = background;
+			myLineChart.update();
+		} else {
+			myLineChart = new Chart(ctxL, {
+				type: 'line',
+				data: {
+					labels: data_labels,
+					datasets: [
+						{
+							label: symbol,
+							data: data_mapped,
+							backgroundColor: background,
+							//  [
+							// 'rgba(105, 0, 132, .2)',
+							// ],
+							borderColor: [
+								// 'rgba(200, 99, 132, .7)',
+								border
+							],
+							borderWidth: 2,
+							pointBorderColor: 'rgba(0, 0, 0, 0)',
+							pointBackgroundColor: border,
+							// pointHoverBackgroundColor: border,
+							// pointHoverBorderColor: border,
+						}
+					]
+				},
+
+				options: {
+					showAllTooltips: true,
+					// hover: {
+					// 	intersect: false,
+					// },
+					// tooltips: {
+					// 	mode: 'x-axis' //always show tooltip
+					// },
+					legend: {
+						display: false,
+					},
+					responsive: true,
+					scales: {
+						xAxes: [{
+							gridLines: {
+								display: false
+							},
+							ticks: {
+								autoSkip: true,
+								maxTicksLimit: 7,
+							}
+						}],
+					},
+
+					plugins: {
+						zoom: {
+							// Container for pan options
+							pan: {
+								// Boolean to enable panning
+								enabled: true,
+
+								// Panning directions. Remove the appropriate direction to disable
+								// Eg. 'y' would only allow panning in the y direction
+								mode: 'xy'
+							},
+
+							// Container for zoom options
+							zoom: {
+								// Boolean to enable zooming
+								enabled: true,
+
+								// Zooming directions. Remove the appropriate direction to disable
+								// Eg. 'y' would only allow zooming in the y direction
+								mode: 'xy',
+							}
+						}
+					}
+				}
+			});
+			$("#pills-tab").css({ visibility: 'visible' });
+		}
+
+	}
+
+</script>
+
