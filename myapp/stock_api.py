@@ -78,9 +78,10 @@ def get_stock_info(symbol):
 # Range must be in ['max', '5y', '2y', '1y', 'ytd', '6m', '3m',
 #                  '1m', '1mm', '5d', '5dm', '1d', 'dynamic']
 # more info at https://iexcloud.io/docs/api/#historical-prices
-def get_stock_historic_prices(symbol, time_range='1m'):
+def get_stock_historic_prices(symbol, time_range='1m', filter=''):
     return _request_data_sandbox('/stable/stock/{symbol}/chart/{time_range}'
-                                 .format(symbol=symbol, time_range=time_range))
+                                 .format(symbol=symbol, time_range=time_range),
+                                 filter=filter)
 
 
 def get_stock_info_notification(symbol, operand):

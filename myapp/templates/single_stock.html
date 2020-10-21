@@ -118,7 +118,16 @@
 		</div>
 	</div>
 </div>
-<!-- <div class="dropdown-divider"></div> -->
+
+<!-- Analyst Recommendations -->
+<div class="row justify-content-start pl-4">
+	<h4>About Company</h4>
+</div>
+<div class="row justify-content-start pl-4">
+	<p id="about-company" style="text-align:left"></p>
+</div>
+
+<!-- About Company Section -->
 <div class="row justify-content-start pl-4">
 	<h4>About Company</h4>
 </div>
@@ -147,12 +156,18 @@
 	});
 
 	function submitTrackingModal(){
-		let days = parseInt($("#days").val());
+		let weeks = parseInt($("#week-select option:selected").val());
 		let operand = $("input[name='operandGroupRadio']:checked").attr("id");
 		let state = $("input[name='stateGroupRadio']:checked").attr("id");
+		let checkBox = $("#this-week-cb").is(":checked");
+		let include_this_week = -1;
 
-		if(isNaN(days) || days < 0 || days > 99){
-			$("#warning").css({display: 'inline'});
+		if (checkBox){
+			include_this_week = 1;
+		}
+
+		if(isNaN(weeks) || weeks < 0 || weeks > 8){
+			// $("#warning").css({display: 'inline'});
 			return;
 		}
 
@@ -168,15 +183,16 @@
 			state = -1;
 		}
 
-		console.log( 'days ' + days + 'operand ' + operand + ' state ' + state);
-		postTracking(state, operand, days);
+		console.log( 'days ' + weeks + 'operand ' + operand + ' state ' + state);
+		postTracking(state, operand, weeks, include_this_week);
 		closeTrackModal();
 	}
 
-	function postTracking(stateVal, operandVal, daysVal) {
+	function postTracking(stateVal, operandVal, weeksVal, include_this_weekVal) {
 		$.post("/tracking/add/", {
 			csrfmiddlewaretoken: CSRFtoken, state: stateVal,
-			operand: operandVal, days: daysVal, company_symbol: symbol
+			operand: operandVal, weeks: weeksVal, company_symbol: symbol,
+			include_this_week:include_this_weekVal
 		}, function () {
 			console.log("tracking submited successfully");
 		})

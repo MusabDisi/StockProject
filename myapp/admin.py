@@ -7,5 +7,5 @@ admin.site.register(UserProfile)
 admin.site.register(Notification)
 admin.site.register(ReadyNotification)
 admin.site.register(Company)
-admin.site.register(Track)
+admin.site.register(TrackStock)
 

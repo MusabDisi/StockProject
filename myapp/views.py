@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from myapp import stock_api
 from django.core.paginator import Paginator
 from django.conf import settings
-from myapp.models import Stock, UserProfile, Notification, ReadyNotification, Company, Track
+from myapp.models import Stock, UserProfile, Notification, ReadyNotification, Company, TrackStock
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
@@ -11,6 +11,8 @@ from django.core.files.storage import FileSystemStorage
 import pathlib
 from django.utils.timezone import now
 from asgiref.sync import sync_to_async
+import datetime
+from dateutil.relativedelta import relativedelta, MO
 
 
 # View for the home page - a list of 20 of the most active stocks
@@ -18,9 +20,11 @@ def index(request, page='1'):
     # Query the stock table, filter for top ranked stocks and order by their rank.
     print('...... index called')
     notifications = ''
+    number_of_notifs = 0
     if request.user.is_authenticated:
-        set_active_notifications(request.user)
-        notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')[:5]  # only recent 5
+        notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')
+        number_of_notifs = len(notifications)
+        notifications = notifications[:5]  # only recent 5
         # popup_modals = ReadyNotification.objects.filter(user=request.user)
 
     if request.method == 'GET':
@@ -43,52 +47,8 @@ def index(request, page='1'):
     to_add = (11 * (int(page) - 1))  # used for numbering the stocks in the list
 
     return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add,
-                                          'notifications': notifications})
-
-
-def get_value_of(symbol, operand):
-    return stock_api.get_stock_info_notification(symbol, operand)
-
-
-def is_bigger(value, api_value):
-    return api_value > value
-
-
-def is_lower(value, api_value):
-    return api_value < value
-
-
-def is_equal(value, api_value):
-    return api_value == value
-
-
-# loops over Notification table and check if any notification must be triggered
-# if yes add it to ReadyNotification table
-def set_active_notifications(user):
-    notifications = Notification.objects.filter(user=user)
-    operators = {'bigger': is_bigger, 'lower': is_lower, 'equal': is_equal}
-    for notification in notifications:
-        time_now = now()
-        should_check = (((time_now - notification.last_checked).seconds // 60 % 60) >= 0)  # check if 10 mins passed
-        if should_check:
-            key = notification.operand
-            symbol = notification.company_symbol
-            api_value = get_value_of(symbol, key)
-            operator = notification.operator
-            value = notification.value
-            if api_value[key] is None:
-                api_value = 0
-            else:
-                api_value = api_value[key]
-            should_activate = operators[operator](value, api_value)
-            if should_activate:
-                description = key + ' is ' + operator + ' than ' + str(value)
-                rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
-                rn.save()
-                notification.delete()
-            else:
-                notification.last_checked = now()
-                notification.save()
+                                          'notifications': notifications,
+                                          'number_of_notifs': number_of_notifs})
 
 
 # View for the single stock page
@@ -257,12 +217,32 @@ def delete_waiting_notification(request, pk='-1'):
     return redirect('my_notifications')
 
 
+# TODO: make datetime zone aware
+def get_time(include_this_week):
+    # Mon 0 - Sun 6
+    today = datetime.datetime.now().weekday()
+    if today == 0:  # if today is Monday return the date
+        return now().date()
+
+    if include_this_week == '1':
+        if today == 5:  # if today is Saturday
+            return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
+        elif today == 6:  # if today is Sunday
+            return (now() + relativedelta(weekday=MO(+1))).date()   # return date of next Monday
+        else:
+            return (now() + relativedelta(weekday=MO(-1))).date()   # return date of prev Monday
+    else:  # go to next week
+        return (now() + relativedelta(weekday=MO(+1))).date()   # return date of next Monday
+
+
+# TODO: show feedback to user
 def add_tracking(request):
     if request.method == "POST":
         if request.user.is_authenticated:
             post = request.POST
             print(post)
-            track = Track(user=request.user, operand=int(post.get('operand')), state=int(post.get('state'))
-                          , days=int(post.get('days')), company_symbol=post.get('company_symbol'))
+            track = TrackStock(user=request.user, operand=int(post.get('operand')), state=int(post.get('state'))
+                               , weeks=int(post.get('weeks')), company_symbol=post.get('company_symbol'),
+                               creation_time=get_time(post.get('include_this_week')))
             track.save()
     return HttpResponse(status=204)
