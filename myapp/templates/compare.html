@@ -3,52 +3,79 @@
 
 
 <div class="chart">
-	
-	<!-- Chart section -->
-	<div class="pt-4 col-sm-6 ">
-		<h6 id="loading">Loading graph...</h6>
-		<canvas id="stockChart"></canvas>
-		<div class="row justify-content-center">
-			<ul class="nav nav-pills mb-3 mt-2" id="pills-tab" role="tablist" style="visibility: hidden;">
-				<li class="nav-item">
-					<a class="nav-link disable" data-toggle="pill" href="#1d" role="tab" aria-controls="pills-home"
-					   aria-selected="false">1D</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link disable" data-toggle="pill" href="#5d" role="tab" aria-controls="pills-home"
-					   aria-selected="false">5D</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile"
-					   aria-selected="true">1M</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="pill" href="#3m" role="tab" aria-controls="pills-contact"
-					   aria-selected="false">3M</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="pill" href="#6m" role="tab" aria-controls="pills-contact"
-					   aria-selected="false">6M</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="pill" href="#1y" role="tab" aria-controls="pills-contact"
-					   aria-selected="false">1Y</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="pill" href="#max" role="tab" aria-controls="pills-contact"
-					   aria-selected="false">Max</a>
-				</li>
-			</ul>
-		</div>
-	</div>
+
+	<canvas id="chart"></canvas>
 
 </div>
 
 
-<script>
-	const x = "{{ stocks|escapejs }}";
-	console.log(x);
+<style>
+	#progress {
+		width: 100%;
+	}
 
+	.progressWrapper {
+		width: 40px;
+	}
+
+	#chart {
+		width: 100%;
+		height: 400px;
+	}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+<script>
+
+	const stocksRaw = "{{ stocks|escapejs }}";
+
+	$(document).ready(function () {
+		requestData(stocksRaw, '1M');
+	});
+
+
+	function requestData(stocksRaw, interval) {
+		$.get("/api/multi_historic/" + stocksRaw + "/" + interval, function () {
+		}).done(function (data) {
+			reflectDataOnChart(data.data);
+		}).fail(function () {
+			console.log('err');
+		});
+	}
+
+	function reflectDataOnChart(data) {
+		var ctx = $('#chart')[0].getContext('2d');
+		var chart = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: data[0].data.map(d => d.label),
+				datasets: getDataSet(data)
+			},
+			options: {}
+		});
+	}
+
+	function getDataSet(stocks) {
+		list = [];
+		for (stock of stocks) {
+			color = getRandomColor();
+			list.push({
+				label: stock.name,
+				borderColor: color + ')',
+				backgroundColor: color + ', 0.4)',
+				data: stock.data.map(d => d.low),
+			});
+		}
+
+		return list;
+	}
+
+	function getRandomColor() {
+		var r = Math.ceil(Math.random() * 255);
+		var g = Math.ceil(Math.random() * 255);
+		var b = Math.ceil(Math.random() * 255);
+		return 'rgb(' + r + ',' + g + ',' + b;
+	}
 
 </script>
 

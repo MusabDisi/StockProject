@@ -125,6 +125,16 @@ def single_stock_historic(request, symbol, time_range='1m'):
     return JsonResponse({'data': data})
 
 
+def multi_stocks_historic(request, stocks, time_range='1m'):
+    result = []
+    stocks_list = stocks.split('-')
+
+    for stock in stocks_list:
+        result.append({'name': stock, 'data': stock_api.get_stock_historic_prices(stock, time_range=time_range)})
+
+    return JsonResponse({'data': result}, content_type="application/json")
+
+
 def get_wiki_info(request, company_name):
     try:
         summary = wiki.summary(company_name, sentences=3)
