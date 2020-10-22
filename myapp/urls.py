@@ -8,6 +8,7 @@ from . import views
 urlpatterns = [
     path('<str:page>/', views.index, name='index'),
     path('', views.index, name='index'),
+    path('exchange', views.exchange, name='exchange'),
     path('stock/<str:symbol>/', views.single_stock, name='single_stock'),
     # path('historic/<str:symbol>/', views.single_stock_historic, name='single_stock_historic'),
     path('api/wikiInfo/<str:company_name>', views.get_wiki_info, name="get_wiki_info"),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('accounts/register/', views.register, name='register'),
     path('accounts/profile/', views.user_profile, name='profile'),
     path('accounts/edit_profile/', views.edit_profile, name='edit_profile'),
+    path('stocks/buy/', views.buy_stock, name='buy_stocks'),
 ]
 
 if settings.DEBUG:

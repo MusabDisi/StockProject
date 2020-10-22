@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from myapp import stock_api
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.conf import settings
-from myapp.models import Stock, UserProfile
+from django.http import QueryDict
+from django.urls import reverse
+from myapp.models import Stock, UserProfile, UserStock, StockOperation
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
@@ -36,6 +39,13 @@ def index(request, page='1'):
 
     return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
 
+def exchange(request):
+	if not request.user.is_authenticated:
+		return redirect(reverse('login'))
+	user = request.user
+	user_stocks = UserStock.objects.get(user_id=user.id)
+	stocks = Stock.objects.all()
+	return render(request, 'exchange.html', {'user_stocks': user_stocks.stock_buyied.all(), 'stocks': stocks, 'user_budget': user_stocks.budget})
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
@@ -58,6 +68,11 @@ def register(request):
         newuser.first_name = firstname
         newuser.last_name = lastname
         newuser.save()
+        user_stock = UserStock.objects.create(user=newuser)
+        user_budget = float(request.POST.get('credit')) if request.POST.get('credit') else 0
+        user_stock.budget = user_budget
+        user_stock.save()
+
         if request.FILES and request.POST.get('avatar') and request.FILES['avatar']:
             avatar = request.FILES['avatar']
             file_ext = pathlib.Path(avatar.name).suffix
@@ -82,6 +97,56 @@ def user_profile(request):
         return render(request, 'profile.html',
                       {'page_title': 'User Profile', 'user': user, 'media_url': settings.MEDIA_URL, 'avatar': avatar})
     return render(request, 'register.html', {'page_title': 'Register'})
+
+def buy_stock(request):
+    if not request.user.is_authenticated:
+        return render(request, 'register.html', {'page_title': 'Register'})
+    user = request.user
+    user_stock_info = UserStock.objects.get(user_id=user.id)
+    request_body = QueryDict(request.body)
+    if not request_body.get('symbol') or not request_body.get('stock_number'):
+        return JsonResponse({"error": "wrong data"})
+
+    stock_symbol = request_body.get('symbol')
+    stock_number = float(request_body.get('stock_number'))
+    stock = Stock.objects.get(symbol=stock_symbol)
+    stock_cost = stock_number * float(stock.price)
+    if request.method == 'POST':
+        if (user_stock_info.budget < stock_cost):
+            return JsonResponse({"error": "no enough budget"})
+        if not user_stock_info.stock_buyied:
+            user_stock_info.user_stock_info = []
+            user_stock_info.save()
+        user_stock = user_stock_info.stock_buyied.all().filter(
+            stock_id=stock_symbol)
+        if user_stock:
+            user_stock[0].stock_number = float(
+                user_stock[0].stock_number) + stock_number
+            user_stock[0].save()
+        else:
+            new_stock = StockOperation.objects.create(
+                stock=stock, stock_number=stock_number)
+            new_stock.save()
+            user_stock_info.stock_buyied.add(new_stock)
+        user_stock_info.budget = float(user_stock_info.budget) - stock_cost
+        user_stock_info.save()
+        return JsonResponse({'user_budget': user_stock_info.budget})
+
+    if request.method == 'DELETE':
+        user_stock = user_stock_info.stock_buyied.all().get(
+            stock_id=stock_symbol)
+        if float(user_stock.stock_number) < stock_number:
+            return JsonResponse({"error": "no enough stock to buy"})
+        user_stock.stock_number = float(user_stock.stock_number) - stock_number
+        if user_stock.stock_number == 0:
+            user_stock_info.stock_buyied.remove(user_stock)
+            user_stock.delete()
+        else:
+            user_stock.save()
+
+        user_stock_info.budget = float(user_stock_info.budget) + stock_cost
+        user_stock_info.save()
+        return JsonResponse({'user_budget': user_stock_info.budget})
 
 
 def edit_profile(request):

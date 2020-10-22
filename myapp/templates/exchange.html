@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="">
+        <h3> Budget {{user_budget}}
+    </div>
+    <div class="row justify-content-md-center">
+        <div class="table-responsive col-md-6">
+            <div> <p>Stocks to Buy</p></div>
+            <table id="sellTable" class="table table-hover data-table ">
+                <tr>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                    <th>Change</th>
+                </tr>
+                {% for stock in stocks %}
+                    <tr onclick="getColumnValue('buy', '{{ stock.symbol }}')">
+                        <td>{{ stock.symbol }}</td>
+                        <td>{{ stock.price|floatformat:2 }}</td>
+                        <td class="
+                        {% if stock.change_percent >= 0 %}
+                            text-success
+                        {% else %}
+                            text-danger
+                        {% endif %}
+                        ">{{ stock.change_percent|floatformat:2 }}%</td>
+
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="table-responsive col-md-6">
+            <div> <p>Stocks to Sell</p></div>
+
+            <table class="table table-hover data-table ">
+                <tr>
+                    <th>Symbol</th>
+                    <th>Price</th>
+                    <th>Number</th>
+                </tr>
+                {% for user_stock in user_stocks %}
+                    <tr onclick="getColumnValue('sell', '{{ user_stock.stock.symbol }}')" >
+                        <td>{{ user_stock.stock.symbol }}</td>
+                        <td>{{ user_stock.stock.price}}</td>
+                        <td>{{ user_stock.stock_number}}</td>
+
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+<div class="modal" id="sellModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Modal Heading</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            
+            <!-- Modal body -->
+            <div class="modal-body">
+                Modal body..
+            </div>
+            
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+<div class="modal" id="buyModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title" id="modal_title"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            
+            <!-- Modal body -->
+            <div class="modal-body">
+                <input name="stock_name" id="buy_stock_name" required class="form-control" disabled type="text">
+                <input name="stock_number" id="buy_stock_number" required class="form-control" placeholder="Stock Number" type="number">
+            </div>
+            
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <div class="row justify-content-end">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-success" id='modal_action_btn' onclick="buyStock()">Buy</button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+<script>
+function getColumnValue(operation, stock_symble){
+        $('#modal_title').text(operation + '  Stocks')
+        $('#modal_action_btn').text(operation)
+        $("#buy_stock_name").val(stock_symble);
+        $("#buyModal").modal('show');
+}
+function buyStock(){
+    let stock_symble = $("#buy_stock_name").val()
+    let stock_number = $("#buy_stock_number").val()
+    let operation = $("#modal_action_btn").text()
+    if (!stock_number) {
+        alert(`Please Set Stock number to ${operation}`)
+        return 
+    }
+    method = operation == 'buy' ? 'POST': 'DELETE' 
+    $.ajax({
+            url: '{% url 'buy_stocks' %}',
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            method: method,
+            data: {
+                'symbol': stock_symble,
+                'stock_number': stock_number
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.error){
+                    alert(data.error)
+                }
+                else {
+                    location.reload(true);
+                }
+
+                }
+        });
+    $("#buyModal").modal('hide');
+
+}
+</script>
+{% endblock scripts %}
