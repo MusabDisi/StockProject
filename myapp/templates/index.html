@@ -81,22 +81,18 @@
 			return;
 		}
 
+		var symbols = '';
+		for (stock of selectedNodes) {
+			symbols += stock.data['symbol'] + ';';
+		}
+
+		// Remove last ;
+		symbols = symbols.slice(0, -1);
+
 		$('#btn').attr('class', 'btn btn-primary');
-		$('#btn').attr('href', 'compare');
+		$('#btn').attr('href', 'compare?symbols=' + symbols);
 		$('#btn')[0].innerText = 'Compare stocks (' + numberOfNodes + ')';
 	}
-
-
-
-
-
-
-
-
-
-
-
-
 
 </script>
 
