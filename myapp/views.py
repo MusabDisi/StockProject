@@ -4,9 +4,8 @@ import wikipedia as wiki
 from django.conf import settings
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.core import serializers
 from django.core.files.storage import FileSystemStorage
-from django.core.paginator import Paginator
-from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
@@ -17,60 +16,11 @@ from myapp.models import Stock, UserProfile
 # View for the home page - a list of 20 of the most active stocks
 def index(request):
     data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-    return get_paginated_homepage(request, data)
-
-
-def search(request):
-    search_query = request.GET.get('search_query', '')
-    data = Stock.objects.filter(
-        Q(name__contains=search_query) |
-        Q(symbol__contains=search_query) |
-        Q(price__contains=search_query) |
-        Q(change_percent__contains=search_query)
-    )
-
-    data = data.order_by(request.GET.get('order_by', 'top_rank'))
-
-    if request.GET.get('direction', 'acs') == 'desc':
-        data = data.reverse()
-
-    return get_paginated_homepage(request, data)
+    return render(request, 'index.html', {'data': serializers.serialize('json', data)})
 
 
 def compare(request):
     return render(request, 'compare.html', {'stock_1': 'aapl', 'stock_2': 'drh'})
-
-
-def get_paginated_homepage(request, data):
-    paginator = Paginator(data, 11)
-    page = request.GET.get('page', '1')
-    data = paginator.get_page(page)
-    to_add = (11 * (int(page) - 1))
-    return render(request, 'index.html', {
-        'page_title': 'Main',
-        'data': data,
-        'to_add': to_add,
-        'search_text': request.GET.get('search_query', ''),
-        'order_by': request.GET.get('order_by', 'top_rank'),
-        'sector': request.GET.get('sector', 'none'),
-        'direction': request.GET.get('direction', 'asc'),
-        'url_parameters_builder': url_parameters_builder(request)
-    })
-
-
-def changed(value, default):
-    return value != default
-
-
-def url_parameters_builder(request):
-    result = ''
-
-    result += ('search_query={}'.format(request.GET.get('search_query', '')))
-    result += ('&order_by={}'.format(request.GET.get('order_by', 'top_rank')))
-    result += ('&sector={}'.format(request.GET.get('sector', 'none')))
-    result += ('&direction={}'.format(request.GET.get('direction', 'asc')))
-
-    return result
 
 
 # View for the single stock page

@@ -1,33 +1,80 @@
 {% extends "base.html" %}
 {% block content %}
+<script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
-	{% include 'search_area.html' %}
+<div class="index">
+	<a id="btn" class="btn btn-secondary disabled" href="" role="button">Show stock info</a>
+	<div id="table" style="height: 600px; width: 100%;" class="ag-theme-material"></div>
+</div>
 
-    <table class="table table-hover data-table ">
-        <tr>
-            <th>#</th>
-            <th>Symbol</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Change</th>
-        </tr>
-        {% for stock in data %}
-            <tr class="clickable-row" data-href="/stock/{{ stock.symbol }}">
+<script>
 
-                <td>{{ forloop.counter|add:to_add }}</td>
-                <td>{{ stock.symbol }}</td>
-                <td>{{ stock.name }}</td>
-                <td>{{ stock.price|floatformat:2 }}</td>
-                <td class="
-                {% if stock.change_percent >= 0 %}
-                    text-success
-                {% else %}
-                    text-danger
-                {% endif %}
-                ">{{ stock.change_percent|floatformat:2 }}%</td>
+	const columnsDef = [
+	  {headerName: "Rank", field: "rank", sortable: true},
+	  {headerName: "Symbol", field: "symbol", sortable: true, filter: true },
+	  {headerName: "Name", field: "name", sortable: true, filter: true },
+	  {headerName: "Price", field: "price", sortable: true },
+	  {headerName: "Change", field: "change", sortable: true, cellStyle: colorChange }
+	];
+	
+	function colorChange (params) {
+		if (params.value.includes('-'))
+			return {color: 'red'};
+		return {color: 'green'};
+	}
+	
+	var rowData = [];
 
-            </tr>
-        {% endfor %}
-    </table>
+    const gridOptions =  {columnDefs: columnsDef, rowData: rowData, rowSelection: 'multiple'};
+
+	 $(document).ready(function() {
+	    // Get data from django as a json
+		var data = JSON.parse('{{ data|escapejs }}');
+		initTable(data);
+		$(".index #table").click(initCompareListener);
+	 });
+
+	function initTable(data) {
+		// Add data
+		data.forEach(function (stock) {
+			fields = stock['fields'];
+			rowData.push({
+					rank: fields['top_rank'],
+					symbol: stock['pk'],
+					name: fields['name'],
+					price: fields['price'],
+					change: fields['change']+'%'
+			});
+		});
+		
+		// Show the grid
+		new agGrid.Grid($('.index #table')[0], gridOptions);
+	}
+
+	function initCompareListener() {
+		  selectedNodes = gridOptions.api.getSelectedNodes();
+		  const numberOfNodes = selectedNodes.length;
+		  
+          if (numberOfNodes == 0) {
+            $('#btn').attr('class', 'btn btn-secondary disabled');
+	        $('#btn')[0].innerText = 'Show stock info';
+            return;
+          }
+
+		  if (numberOfNodes == 1) {
+            $('#btn').attr('class', 'btn btn-success');
+            const symbol = selectedNodes[0].data.symbol;
+            $('#btn').attr('href', 'stock/'+symbol);
+		    $('#btn')[0].innerText = 'Show ('+ symbol +') info';
+		    return;
+		  }
+		  
+          $('#btn').attr('class', 'btn btn-primary');
+          $('#btn').attr('href', 'compare');
+		  $('#btn')[0].innerText = 'Compare stocks ('+numberOfNodes+')';
+	}
+
+
+</script>
 
 {% endblock %}
