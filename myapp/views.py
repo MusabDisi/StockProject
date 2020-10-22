@@ -20,7 +20,7 @@ def index(request):
 
 
 def compare(request):
-    return render(request, 'compare.html', {'stock_1': 'aapl', 'stock_2': 'drh'})
+    return render(request, 'compare.html', {'stocks': request.GET.get('symbols')})
 
 
 # View for the single stock page
