@@ -1,15 +1,41 @@
 {% extends "base.html" %}
 {% block content %}
 
-
+<h1>Stocks</h1>
 <div class="chart">
-
+	<div class="progress">
+		<div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar">
+		</div>
+	</div>
 	<canvas id="chart"></canvas>
-
 </div>
+
+<br>
+
+<nav aria-label="Page navigation example">
+	<ul class="pagination">
+		<li class="page-item"><a class="page-link" href="#">1D</a></li>
+		<li class="page-item"><a class="page-link" href="#">5D</a></li>
+		<li class="page-item"><a class="page-link" href="#">1M</a></li>
+		<li class="page-item"><a class="page-link" href="#">3M</a></li>
+		<li class="page-item"><a class="page-link" href="#">6M</a></li>
+		<li class="page-item"><a class="page-link" href="#">1Y</a></li>
+		<li class="page-item"><a class="page-link" href="#">Max</a></li>
+	</ul>
+</nav>
 
 
 <style>
+	h1 {
+		text-align: left;
+		color: black;
+	}
+
+	nav {
+		display: inline-block;
+		margin: 0 auto;
+	}
+
 	#progress {
 		width: 100%;
 	}
@@ -28,16 +54,31 @@
 <script>
 
 	const stocksRaw = "{{ stocks|escapejs }}";
+	var currentChart = null;
 
 	$(document).ready(function () {
-		requestData(stocksRaw, '1M');
+		requestData('1M');
+		$("ul li a").on("click", function () {
+			requestData(this.innerText);
+		})
 	});
 
+	function requestData(interval) {
+		// Reset colors
+		$("ul li a").css('background-color', 'white');
+		$("ul li a").css('color', '#2d7df6');
+		// Highlight selected
+		$("ul li a:contains('" + interval + "')").css('background-color', '#2d7df6');
+		$("ul li a:contains('" + interval + "')").css('color', 'white');
+		if (currentChart != null) currentChart.destroy();
 
-	function requestData(stocksRaw, interval) {
+		$('.progress').css('visibility', 'visible');
+		$('nav').css('visibility', 'hidden');
 		$.get("/api/multi_historic/" + stocksRaw + "/" + interval, function () {
 		}).done(function (data) {
 			reflectDataOnChart(data.data);
+			$('.progress').css('visibility', 'hidden');
+			$('nav').css('visibility', 'visible');
 		}).fail(function () {
 			console.log('err');
 		});
@@ -45,7 +86,7 @@
 
 	function reflectDataOnChart(data) {
 		var ctx = $('#chart')[0].getContext('2d');
-		var chart = new Chart(ctx, {
+		currentChart = new Chart(ctx, {
 			type: 'line',
 			data: {
 				labels: data[0].data.map(d => d.label),
