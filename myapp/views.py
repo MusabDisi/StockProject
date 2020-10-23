@@ -197,9 +197,14 @@ def add_notification(request):
 def my_notifications(request):
     waiting_notifs = Notification.objects.filter(user=request.user)
     active_notifs = ReadyNotification.objects.filter(user=request.user)
+    analyst_notifs = NotificationAnalystRec.objects.filter(user=request.user)
+    tracking_notifs = TrackStock.objects.filter(user=request.user)
+
     context = {
         'waiting_notifs': waiting_notifs,
         'active_notifs': active_notifs,
+        'analyst_notifs': analyst_notifs,
+        'tracking_notifs': tracking_notifs,
     }
     return render(request, 'my_notifications.html', context)
 
@@ -266,3 +271,23 @@ def add_notification_analyst(request):
                                            , company_symbol=post.get('company_symbol').strip())
             notif.save()
     return HttpResponse(status=204)
+
+
+def delete_tracking_notification(request, pk='-1'):
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = TrackStock.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')
+
+
+def delete_analyst_notification(request, pk='-1'):
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = NotificationAnalystRec.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')

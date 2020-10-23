@@ -23,28 +23,28 @@
 	<p class="lead">{{ data.primaryExchange }}</p>
 	<a href="https://iexcloud.io">Data provided by IEX Cloud</a>
 </div> -->
-
-<div class="col-md-12 text-left">
-	<span class="lead">
-		<big>
-			{{ data.latestPrice }}
-			<small class="lead">
-				{% if data.changePercent >= 0 %}
-				<span class="text-success">+{{ data.change }} (+{{ data.changePercent|floatformat:4 }}%)</span>
-				{% else %}
-				<span class="text-danger">{{ data.change }} ({{ data.changePercent|floatformat:4 }}%)</span>
-				{% endif %}
-			</small>
-		</big>
-	</span>
-	<br>
-	<small class="text-muted">Updated time: {{ data.latestTime }}</small>
+<div class="row align-items-center pl-3">
+	<div class="col-md-12 text-left">
+		<span class="lead">
+			<big>
+				{{ data.latestPrice }}
+				<small class="lead">
+					{% if data.changePercent >= 0 %}
+					<span class="text-success">+{{ data.change }} (+{{ data.changePercent|floatformat:4 }}%)</span>
+					{% else %}
+					<span class="text-danger">{{ data.change }} ({{ data.changePercent|floatformat:4 }}%)</span>
+					{% endif %}
+				</small>
+			</big>
+		</span>
+		<br>
+		<small class="text-muted">Updated time: {{ data.latestTime }}</small>
+	</div>
 </div>
 
 
-
 <div class="row align-items-center" style="height: 400px;">
-	<div class="pt-4 col-sm-6 pl-5">
+	<div class="pt-4 col-xl-6 col-lg-6 col-md-6 col-sm-12 pl-5">
 		<dl class="row text-left">
 			<dt class="col-sm-6">Open</dt>
 			<dd class="col-sm-6">{{ data.open }}</dd>
@@ -79,8 +79,7 @@
 				Me</button>
 		</div>
 	</div>
-
-	<div class="pt-4 col-sm-6 ">
+	<div class="pt-4 col-xl-6 col-lg-6 col-md-6 col-sm-12 ">
 		<h6 id="loading">Loading graph...</h6>
 		<canvas id="stockChart"></canvas>
 		<div class="row justify-content-center">
@@ -123,15 +122,16 @@
 </div>
 
 <!-- <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/> -->
-								
+
 <!-- Analyst Recommendations -->
 <div class="row justify-content-start pl-4">
 	<h4>Analyst Recommendations</h4>
 </div>
 <div class="row justify-content-start pl-4">
 	{% include 'analyst_table.html' %}
-	<div class="row ml-3 mt-0 mb-3">
-		<button id="open-modal-analyst" type="button" class="btn btn-outline-info  mr-2 mt-2" style="width: 100px;">Notify
+	<div class="row ml-4 mt-1 mb-3">
+		<button id="open-modal-analyst" type="button" class="btn btn-outline-info  mr-2 mt-2"
+			style="width: 100px;">Notify
 			Me</button>
 	</div>
 </div>
@@ -286,7 +286,7 @@
 
 <!-- Analyst Model -->
 <script>
-$(document).ready(function () {
+	$(document).ready(function () {
 		// Notifications modal
 		$("#open-modal-analyst").click(openModalAnalyst);
 		$(".close").click(closeModalAnalyst);
@@ -308,7 +308,7 @@ $(document).ready(function () {
 	function submitModalAnalyst() {
 		let operatorVal = $("#select-operator").val();
 		let scale = parseFloat($("#scale-select option:selected").val());
-		
+
 		postNotificationAnalyst(operatorVal, scale)
 
 		closeModalAnalyst();
