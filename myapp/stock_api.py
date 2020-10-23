@@ -88,3 +88,7 @@ def get_stock_info_notification(symbol, operand):
     return _request_data_sandbox('/stable/stock/{symbol}/quote'.format(symbol=symbol),
                                  additional_parameters={'displayPercent': 'true'},
                                  filter=operand)
+
+
+def get_analyst_recommendations(symbol):
+    return _request_data_sandbox('/stable/stock/{symbol}/recommendation-trends'.format(symbol=symbol))

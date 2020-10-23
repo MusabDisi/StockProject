@@ -119,12 +119,14 @@
 	</div>
 </div>
 
+<!-- <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/> -->
+								
 <!-- Analyst Recommendations -->
 <div class="row justify-content-start pl-4">
-	<h4>About Company</h4>
+	<h4>Analyst Recommendations</h4>
 </div>
 <div class="row justify-content-start pl-4">
-	<p id="about-company" style="text-align:left"></p>
+	{% include 'analyst_table.html' %}
 </div>
 
 <!-- About Company Section -->
@@ -155,35 +157,35 @@
 		$("#submit-track").click(submitTrackingModal);
 	});
 
-	function submitTrackingModal(){
+	function submitTrackingModal() {
 		let weeks = parseInt($("#week-select option:selected").val());
 		let operand = $("input[name='operandGroupRadio']:checked").attr("id");
 		let state = $("input[name='stateGroupRadio']:checked").attr("id");
 		let checkBox = $("#this-week-cb").is(":checked");
 		let include_this_week = -1;
 
-		if (checkBox){
+		if (checkBox) {
 			include_this_week = 1;
 		}
 
-		if(isNaN(weeks) || weeks < 0 || weeks > 8){
+		if (isNaN(weeks) || weeks < 0 || weeks > 8) {
 			// $("#warning").css({display: 'inline'});
 			return;
 		}
 
-		if(operand == 'high-rd'){
+		if (operand == 'high-rd') {
 			operand = 1;
-		}else{
+		} else {
 			operand = -1;
 		}
 
-		if(state == 'increasing-rd'){
+		if (state == 'increasing-rd') {
 			state = 1;
-		}else{
+		} else {
 			state = -1;
 		}
 
-		console.log( 'days ' + weeks + 'operand ' + operand + ' state ' + state);
+		console.log('days ' + weeks + 'operand ' + operand + ' state ' + state);
 		postTracking(state, operand, weeks, include_this_week);
 		closeTrackModal();
 	}
@@ -192,7 +194,7 @@
 		$.post("/tracking/add/", {
 			csrfmiddlewaretoken: CSRFtoken, state: stateVal,
 			operand: operandVal, weeks: weeksVal, company_symbol: symbol,
-			include_this_week:include_this_weekVal
+			include_this_week: include_this_weekVal
 		}, function () {
 			console.log("tracking submited successfully");
 		})
@@ -272,6 +274,41 @@
 		$("#low").val(parseFloat(low));
 
 	}
+</script>
+<!-- Analyst Chart -->
+<script>
+	$(document).ready(function () {
+		drawAnalystChart();
+	});
+
+
+	function drawAnalystChart() {
+		var canvas = document.getElementById("analyst-chart");
+		let ctxL = canvas.getContext('2d');
+		let data = ["{{rec.ratingSell}}", "{{rec.ratingHold}}", "{{rec.ratingBuy}}", "{{rec.ratingOverweight}}", "{{rec.ratingUnderweight}}"];
+		let labels = ["Sell Rating(s)", "Hold Rating(s)", "Buy Rating(s)", "Overweight Rating(s)", "Overweight Rating(s)"];
+		new Chart(ctxL, {
+			type: 'radar',
+			data: {
+				labels: labels,
+				datasets: [
+					{
+						label: symbol,
+						data: data,
+						backgroundColor: 'rgba(105, 0, 132, .2)',
+						borderColor: 'rgba(200, 99, 132, .7)',
+						borderWidth: 2,
+					}
+				]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+			}
+		});
+
+	}
+
 </script>
 <script>
 	getWiki("{{data.symbol}}");
@@ -459,9 +496,9 @@
 					// hover: {
 					// 	intersect: false,
 					// },
-					// tooltips: {
-					// 	mode: 'x-axis' //always show tooltip 
-					// },
+					tooltips: {
+						mode: 'x-axis' //always show tooltip 
+					},
 					legend: {
 						display: false,
 					},
@@ -499,7 +536,8 @@
 								// Eg. 'y' would only allow zooming in the y direction
 								mode: 'xy',
 							}
-						}
+						},
+
 					}
 				}
 			});

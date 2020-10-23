@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.events import EVENT_ALL
+# from apscheduler.events import EVENT_ALL
 from .models import Notification, ReadyNotification, TrackStock
 from django.utils.timezone import now
 from myapp import stock_api
@@ -7,7 +7,7 @@ import datetime
 from dateutil.relativedelta import relativedelta, FR
 
 
-# TODO: When we already have a job running what to do?
+# When we already have a job running what to do? we can use max_instances keyword
 # TODO: Caching system
 # TODO: Event listener for exceptions
 # this class uses apsscheduler

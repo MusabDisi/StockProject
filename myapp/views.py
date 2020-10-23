@@ -55,9 +55,17 @@ def index(request, page='1'):
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 def single_stock(request, symbol):
     data = stock_api.get_stock_info(symbol)
+    recs_data = stock_api.get_analyst_recommendations(symbol)
+    rec = recs_data[0]
+    try:
+        rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
+            rec['corporateActionsAppliedDate']/1000.0)).strftime("%Y-%m-%d")
+    except TypeError:
+        rec['corporateActionsAppliedDate'] = "Unavailable"
     # high = check_if_notification_set(request.user, symbol, 'high')
     # low = check_if_notification_set(request.user, symbol, 'low')
-    return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data})
+    return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
+                                                 'rec': rec})
 
 
 def register(request):
@@ -228,11 +236,11 @@ def get_time(include_this_week):
         if today == 5:  # if today is Saturday
             return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
         elif today == 6:  # if today is Sunday
-            return (now() + relativedelta(weekday=MO(+1))).date()   # return date of next Monday
+            return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
         else:
-            return (now() + relativedelta(weekday=MO(-1))).date()   # return date of prev Monday
+            return (now() + relativedelta(weekday=MO(-1))).date()  # return date of prev Monday
     else:  # go to next week
-        return (now() + relativedelta(weekday=MO(+1))).date()   # return date of next Monday
+        return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
 
 
 # TODO: show feedback to user

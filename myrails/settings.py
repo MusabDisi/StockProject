@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
+
 """
 
 import os
@@ -109,6 +110,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+# cache { memcached, }
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': '127.0.0.1:11211',
+#     },
+# }
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
@@ -125,5 +135,3 @@ LOGIN_REDIRECT_URL = '/'
 
 MEDIA_URL = 'myapp/static/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'myapp/static/media')
-
-os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
