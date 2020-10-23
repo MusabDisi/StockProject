@@ -25,6 +25,8 @@ urlpatterns = [
     path('notification/delete_waiting/<str:pk>', views.delete_waiting_notification, name='delete_waiting_notification'),
     path('company/get_description/<str:company_symbol>', views.get_company_desc, name="get_company_description"),
     path('tracking/add/', views.add_tracking, name='add_tracking'),
+    path('notification_analyst/add/', views.add_notification_analyst, name='notification-analyst'),
+
 ]
 
 if settings.DEBUG:

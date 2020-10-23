@@ -49,6 +49,14 @@ class Notification(models.Model):
     last_checked = models.DateTimeField(default=now)
 
 
+class NotificationAnalystRec(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    operator = models.CharField(max_length=6)
+    value = models.FloatField()
+    company_symbol = models.CharField(max_length=12)
+    last_checked = models.DateTimeField(default=now)
+
+
 class ReadyNotification(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     company_symbol = models.CharField(max_length=12)

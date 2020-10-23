@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from myapp import stock_api
 from django.core.paginator import Paginator
 from django.conf import settings
-from myapp.models import Stock, UserProfile, Notification, ReadyNotification, Company, TrackStock
+from myapp.models import *
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
@@ -59,7 +59,7 @@ def single_stock(request, symbol):
     rec = recs_data[0]
     try:
         rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
-            rec['corporateActionsAppliedDate']/1000.0)).strftime("%Y-%m-%d")
+                rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
     except TypeError:
         rec['corporateActionsAppliedDate'] = "Unavailable"
     # high = check_if_notification_set(request.user, symbol, 'high')
@@ -253,4 +253,16 @@ def add_tracking(request):
                                , weeks=int(post.get('weeks')), company_symbol=post.get('company_symbol'),
                                creation_time=get_time(post.get('include_this_week')))
             track.save()
+    return HttpResponse(status=204)
+
+
+def add_notification_analyst(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            post = request.POST
+            print(post)
+            notif = NotificationAnalystRec(user=request.user, operator=post.get('operator').strip()
+                                           , value=post.get('value').strip()
+                                           , company_symbol=post.get('company_symbol').strip())
+            notif.save()
     return HttpResponse(status=204)

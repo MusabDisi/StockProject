@@ -1,0 +1,36 @@
+<!-- The Modal -->
+<div id="analyst-modal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="row justify-content-end pr-4">
+            <span class="close">&times;</span>
+        </div>
+        <div class="row justify-content-start pl-4">
+            <h3>Notify me when:</h3>
+        </div>
+        <hr style="margin-top: 0.2rem;
+                    margin-bottom: 0.2rem;
+                    color:rgba(0, 0, 0, 0.6)" />
+        <div id="high-row" class="row justify-content-center align-items-center pt-1">
+            <div class="col-md-5">
+                <h4>Rating Scale</h4>
+            </div>
+            <div class="col-md-3">
+                {% include 'popup_modal/select.html'%}
+            </div>
+            <div class="col-md-3">
+                <select class="browser-default custom-select mb-2" id="scale-select" style="margin-bottom:0rem!important;">
+                    <option value="1" selected>1:Buy</option>
+                    <option value="1.5">1.5:Overweight</option>
+                    <option value="2">2:Hold</option>
+                    <option value="2.5">2.5:underweight</option>
+                    <option value="3">3:Sell</option>
+                </select> 
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-center pt-4">
+            <button id="submit-analyst" type="button" class="btn btn-primary w-100 mr-4 ml-4 mt-2">Submit</button>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 # from apscheduler.events import EVENT_ALL
-from .models import Notification, ReadyNotification, TrackStock
+from .models import Notification, ReadyNotification, TrackStock, NotificationAnalystRec
 from django.utils.timezone import now
 from myapp import stock_api
 import datetime
@@ -17,11 +17,13 @@ class NotificationsScheduler:
         self.scheduler = BackgroundScheduler()
         self.notifications_id = 'notifications_job'
         self.stock_tracking_id = 'tracking_job'
+        self.analyst_rec_id = 'analyst_rec_job'
 
     def start(self):
-        print('Started running the job')
+        print('Started running the jobs')
         self.scheduler.add_job(self.set_active_notifications, 'interval', hours=1, id=self.notifications_id)
         self.scheduler.add_job(self.check_tracking_model, 'interval', hours=12, id=self.stock_tracking_id)
+        self.scheduler.add_job(self.check_notifications_analyst, 'interval', seconds=30, id=self.analyst_rec_id)
 
         # self.scheduler.add_listener(self.job_listener, EVENT_ALL)
         self.scheduler.start()
@@ -38,6 +40,12 @@ class NotificationsScheduler:
     @staticmethod
     def get_value_of(symbol, operand):
         return stock_api.get_stock_info_notification(symbol, operand)
+
+    @staticmethod
+    def get_analyst_record_of(symbol):
+        data = stock_api.get_analyst_recommendations(symbol)
+        rec = data[0]
+        return rec.get('ratingScaleMark')
 
     @staticmethod
     def is_bigger(value, api_value):
@@ -178,6 +186,27 @@ class NotificationsScheduler:
                     rn.save()
                     track.delete()
 
+    def check_notifications_analyst(self):
+        notifications = NotificationAnalystRec.objects.all()
+        operators = {'bigger': self.is_bigger, 'lower': self.is_lower, 'equal': self.is_equal}
+        for notification in notifications:
+            time_now = now()
+            should_check = (((time_now - notification.last_checked).seconds // 60 % 60) >= 0)  # check if 10 mins passed
+            if should_check:
+                user = notification.user
+                symbol = notification.company_symbol
+                api_value = self.get_analyst_record_of(symbol)
+                operator = notification.operator
+                value = notification.value
+                should_activate = operators[operator](value, api_value)
+                if should_activate:
+                    description = 'Analyst Scale Rate ' + str(operator) + ' than ' + str(value)
+                    rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
+                    rn.save()
+                    notification.delete()
+                else:
+                    notification.last_checked = now()
+                    notification.save()
     # def job_listener(self, event):
     #     if event.exception:
     #         print('The job crashed :(')
