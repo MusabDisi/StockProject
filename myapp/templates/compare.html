@@ -1,17 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>Stocks</h1>
-<div class="chart">
-	<div class="progress">
-		<div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar">
-		</div>
+<div class="progress">
+	<div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar">
 	</div>
-	<canvas id="chart"></canvas>
 </div>
 
-<br>
-
+<h1>Prices timeline</h1>
+<canvas id="chart"></canvas>
 <nav class="timeline" aria-label="Page navigation example">
 	<ul class="pagination">
 		<li class="page-item"><a class="page-link" href="#">1D</a></li>
@@ -23,6 +19,10 @@
 		<li class="page-item"><a class="page-link" href="#">Max</a></li>
 	</ul>
 </nav>
+
+<hr>
+<h1>Today's value</h1>
+<canvas id="todayChart"></canvas>
 
 
 <style>
@@ -44,7 +44,7 @@
 		width: 40px;
 	}
 
-	#chart {
+	canvas {
 		width: 100%;
 		height: 400px;
 	}
@@ -54,7 +54,9 @@
 <script>
 
 	const stocksRaw = "{{ stocks|escapejs }}";
-	var currentChart = null;
+	var timelineChart = null;
+	var todayPriceChart = null;
+	const stocksColors = [];
 
 	$(document).ready(function () {
 		requestData('1M');
@@ -70,13 +72,13 @@
 		// Highlight selected
 		$("ul li a:contains('" + interval + "')").css('background-color', '#2d7df6');
 		$("ul li a:contains('" + interval + "')").css('color', 'white');
-		if (currentChart != null) currentChart.destroy();
+		if (timelineChart != null) timelineChart.destroy();
 
 		$('.progress').css('visibility', 'visible');
 		$('.timeline').css('visibility', 'hidden');
 		$.get("/api/multi_historic/" + stocksRaw + "/" + interval, function () {
 		}).done(function (data) {
-			reflectDataOnChart(data.data);
+			reflectDataOnCharts(data.data);
 			$('.progress').css('visibility', 'hidden');
 			$('.timeline').css('visibility', 'visible');
 		}).fail(function () {
@@ -84,9 +86,18 @@
 		});
 	}
 
-	function reflectDataOnChart(data) {
+	function buildStocksColors(data) {
+		for (datum of data)
+			stocksColors.push(getRandomColor());
+	}
+
+	function reflectDataOnCharts(data) {
+		// Build stock colors
+		if (stocksColors.length == 0) buildStocksColors(data);
+
+		// Build timeline chart
 		var ctx = $('#chart')[0].getContext('2d');
-		currentChart = new Chart(ctx, {
+		timelineChart = new Chart(ctx, {
 			type: 'line',
 			data: {
 				labels: data[0].data.map(d => d.label),
@@ -94,16 +105,33 @@
 			},
 			options: {}
 		});
+
+		// Build today's prices chart
+		if (todayPriceChart == null)
+			todayPriceChart = new Chart($('#todayChart')[0].getContext('2d'), {
+				type: 'bar',
+				data: {
+					labels: data.map(d => d.name),
+					datasets: [{
+						label: 'Stock price',
+						data: data.map(d => d.data[0].low),
+						backgroundColor: stocksColors.map(color => ("#80" + color)),
+						borderColor: stocksColors.map(color => ("#FF" + color)),
+						borderWidth: 1
+					}]
+				},
+				options: { scales: { yAxes: [{ ticks: { beginAtZero: true } }] }, legend: { display: false } }
+			});
 	}
 
 	function getDataSet(stocks) {
 		list = [];
+		var i = 0;
 		for (stock of stocks) {
-			color = getRandomColor();
 			list.push({
 				label: stock.name,
-				borderColor: color + ')',
-				backgroundColor: color + ', 0.4)',
+				borderColor: '#' + stocksColors[i],
+				backgroundColor: '#80' + stocksColors[i++],
 				data: stock.data.map(d => d.low),
 			});
 		}
@@ -112,12 +140,13 @@
 	}
 
 	function getRandomColor() {
-		var r = Math.ceil(Math.random() * 255);
-		var g = Math.ceil(Math.random() * 255);
-		var b = Math.ceil(Math.random() * 255);
-		return 'rgb(' + r + ',' + g + ',' + b;
+		var letters = '0123456789ABCDEF';
+		var color = '';
+		for (var i = 0; i < 6; i++) {
+			color += letters[Math.floor(Math.random() * 16)];
+		}
+		return color;
 	}
-
 </script>
 
 {% endblock %}
