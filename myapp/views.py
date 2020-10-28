@@ -15,43 +15,21 @@ from myapp.models import *
 
 # View for the home page - a list of 20 of the most active stocks
 def index(request):
+    notifications = ''
+    number_of_notifs = 0
+    if request.user.is_authenticated:
+        notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')
+        number_of_notifs = len(notifications)
+        notifications = notifications[:5]  # only recent 5
+
     data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-    return render(request, 'index.html', {'data': serializers.serialize('json', data)})
 
-
-#
-# def index(request, page='1'):
-#     Query the stock table, filter for top ranked stocks and order by their rank.
-# print('...... index called')
-# notifications = ''
-# number_of_notifs = 0
-# if request.user.is_authenticated:
-#     notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')
-#     number_of_notifs = len(notifications)
-#     notifications = notifications[:5]  # only recent 5
-#     popup_modals = ReadyNotification.objects.filter(user=request.user)
-#
-# if request.method == 'GET':
-#     page = request.GET.get('page')
-#
-# try:  # in case user inters un valid page go to main
-#     if page is not None:
-#         int(page)
-#     else:
-#         page = '1'
-# except ValueError:
-#     page = '1'
-#
-# data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-#
-# paginator = Paginator(data, 11)
-#
-# data = paginator.get_page(page)
-#
-# to_add = (11 * (int(page) - 1))  # used for numbering the stocks in the list
-#
-# return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add,
-#
+    return render(request, 'index.html', {
+        'page_title': 'Main',
+        'data': serializers.serialize('json', data),
+        'notifications': notifications,
+        'number_of_notifs': number_of_notifs
+    })
 
 
 def compare(request):
@@ -168,15 +146,6 @@ def logout_view(request):
 def single_stock_historic(request, symbol, time_range='1m'):
     data = stock_api.get_stock_historic_prices(symbol, time_range=time_range)
     return JsonResponse({'data': data})
-
-
-# call wikipedia api
-# def get_wiki_info(request, company_name):
-#     try:
-#         summary = wiki.summary(company_name, sentences=3)
-#         return JsonResponse({'summary': summary})
-#     except Exception:
-#         return JsonResponse({'summary': "Couldn't find information"})
 
 
 def get_company_desc(request, company_symbol):
