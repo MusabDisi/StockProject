@@ -1,0 +1,29 @@
+<div class="row m-1 align-items-center" style="height: 300px;">
+    <div class="col">
+        <table class="table table-bordered" style="margin-bottom: 0%;">
+        <tbody>
+            <tr>
+                <td>Corporate Actions Applied Date</td>
+                <td>{{rec.corporateActionsAppliedDate}}</td>
+            </tr>   
+            <tr>
+                <td>Analyst Ratings</td>
+                <td>{{rec.ratingSell}} Sell Rating(s)
+                    {{rec.ratingHold}} Hold Rating(s)
+                    {{rec.ratingBuy}} Buy Rating(s)
+                    {{rec.ratingOverweight}} Overweight Rating(s)
+                    {{rec.ratingUnderweight}} Underweight Rating(s)
+                </td>
+            </tr>
+            <tr>
+                <td>Rating Scale Mark</td>
+                <td>{{rec.ratingScaleMark}} </td>
+            </tr>
+        </tbody>
+        </table>
+        <small class="ml-1"style="float: left; ">Scale => 1:Buy  1.5:Overweight  2:Hold  2.5:Underweight  3:Sell</small>
+    </div>
+    <div class="col">
+        <canvas id="analyst-chart" style="width: 200px; height: 200px;"></canvas>
+    </div>
+</div>

@@ -1,19 +1,31 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from myapp import stock_api
 from django.core.paginator import Paginator
 from django.conf import settings
-from myapp.models import Stock, UserProfile
+from myapp.models import *
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import logout
-import wikipedia as wiki
+# import wikipedia as wiki
 from django.core.files.storage import FileSystemStorage
 import pathlib
+from django.utils.timezone import now
+from asgiref.sync import sync_to_async
+import datetime
+from dateutil.relativedelta import relativedelta, MO
 
 
 # View for the home page - a list of 20 of the most active stocks
 def index(request, page='1'):
     # Query the stock table, filter for top ranked stocks and order by their rank.
+    print('...... index called')
+    notifications = ''
+    number_of_notifs = 0
+    if request.user.is_authenticated:
+        notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')
+        number_of_notifs = len(notifications)
+        notifications = notifications[:5]  # only recent 5
+        # popup_modals = ReadyNotification.objects.filter(user=request.user)
 
     if request.method == 'GET':
         page = request.GET.get('page')
@@ -34,14 +46,26 @@ def index(request, page='1'):
 
     to_add = (11 * (int(page) - 1))  # used for numbering the stocks in the list
 
-    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add})
+    return render(request, 'index.html', {'page_title': 'Main', 'data': data, 'to_add': to_add,
+                                          'notifications': notifications,
+                                          'number_of_notifs': number_of_notifs})
 
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 def single_stock(request, symbol):
     data = stock_api.get_stock_info(symbol)
-    return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data})
+    recs_data = stock_api.get_analyst_recommendations(symbol)
+    rec = recs_data[0]
+    try:
+        rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
+                rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
+    except TypeError:
+        rec['corporateActionsAppliedDate'] = "Unavailable"
+    # high = check_if_notification_set(request.user, symbol, 'high')
+    # low = check_if_notification_set(request.user, symbol, 'low')
+    return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
+                                                 'rec': rec})
 
 
 def register(request):
@@ -139,9 +163,131 @@ def single_stock_historic(request, symbol, time_range='1m'):
     return JsonResponse({'data': data})
 
 
-def get_wiki_info(request, company_name):
+# call wikipedia api
+# def get_wiki_info(request, company_name):
+#     try:
+#         summary = wiki.summary(company_name, sentences=3)
+#         return JsonResponse({'summary': summary})
+#     except Exception:
+#         return JsonResponse({'summary': "Couldn't find information"})
+
+
+def get_company_desc(request, company_symbol):
     try:
-        summary = wiki.summary(company_name, sentences=3)
-        return JsonResponse({'summary': summary})
-    except Exception:
-        return JsonResponse({'summary': "Couldn't find information"})
+        comp = Company.objects.get(company_symbol=company_symbol)
+        return JsonResponse({'summary': comp.company_desc})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'summary': 'Couldn\'t find information'})
+
+
+def add_notification(request):
+    print('received')
+    if request.method == "POST":
+        print('posting', request.POST)
+        if request.user.is_authenticated:
+            notification = Notification(user=request.user, operator=request.POST.get('operator').strip()
+                                        , operand=request.POST.get('operand').strip()
+                                        , value=request.POST.get('value').strip()
+                                        , company_symbol=request.POST.get('company_symbol').strip())
+            notification.save()
+    return HttpResponse(status=204)
+
+
+def my_notifications(request):
+    waiting_notifs = Notification.objects.filter(user=request.user)
+    active_notifs = ReadyNotification.objects.filter(user=request.user)
+    analyst_notifs = NotificationAnalystRec.objects.filter(user=request.user)
+    tracking_notifs = TrackStock.objects.filter(user=request.user)
+
+    context = {
+        'waiting_notifs': waiting_notifs,
+        'active_notifs': active_notifs,
+        'analyst_notifs': analyst_notifs,
+        'tracking_notifs': tracking_notifs,
+    }
+    return render(request, 'my_notifications.html', context)
+
+
+def delete_active_notification(request, pk='-1'):
+    print('delete active')
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = ReadyNotification.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')
+
+
+def delete_waiting_notification(request, pk='-1'):
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = Notification.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')
+
+
+# TODO: make datetime zone aware
+def get_time(include_this_week):
+    # Mon 0 - Sun 6
+    today = datetime.datetime.now().weekday()
+    if today == 0:  # if today is Monday return the date
+        return now().date()
+
+    if include_this_week == '1':
+        if today == 5:  # if today is Saturday
+            return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
+        elif today == 6:  # if today is Sunday
+            return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
+        else:
+            return (now() + relativedelta(weekday=MO(-1))).date()  # return date of prev Monday
+    else:  # go to next week
+        return (now() + relativedelta(weekday=MO(+1))).date()  # return date of next Monday
+
+
+# TODO: show feedback to user
+def add_tracking(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            post = request.POST
+            print(post)
+            track = TrackStock(user=request.user, operand=int(post.get('operand')), state=int(post.get('state'))
+                               , weeks=int(post.get('weeks')), company_symbol=post.get('company_symbol'),
+                               creation_time=get_time(post.get('include_this_week')))
+            track.save()
+    return HttpResponse(status=204)
+
+
+def add_notification_analyst(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            post = request.POST
+            print(post)
+            notif = NotificationAnalystRec(user=request.user, operator=post.get('operator').strip()
+                                           , value=post.get('value').strip()
+                                           , company_symbol=post.get('company_symbol').strip())
+            notif.save()
+    return HttpResponse(status=204)
+
+
+def delete_tracking_notification(request, pk='-1'):
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = TrackStock.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')
+
+
+def delete_analyst_notification(request, pk='-1'):
+    if request.user.is_authenticated:
+        if pk != '-1':
+            n = NotificationAnalystRec.objects.filter(user=request.user, id=pk)
+            if n:
+                n.delete()
+
+    return redirect('my_notifications')

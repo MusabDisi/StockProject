@@ -21,4 +21,3 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.load_csv()
 
-
