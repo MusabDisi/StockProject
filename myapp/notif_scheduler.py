@@ -23,7 +23,7 @@ class NotificationsScheduler:
         print('Started running the jobs')
         self.scheduler.add_job(self.set_active_notifications, 'interval', hours=1, id=self.notifications_id)
         self.scheduler.add_job(self.check_tracking_model, 'interval', hours=12, id=self.stock_tracking_id)
-        self.scheduler.add_job(self.check_notifications_analyst, 'interval', seconds=30, id=self.analyst_rec_id)
+        self.scheduler.add_job(self.check_notifications_analyst, 'interval', days=1, id=self.analyst_rec_id)
 
         # self.scheduler.add_listener(self.job_listener, EVENT_ALL)
         self.scheduler.start()

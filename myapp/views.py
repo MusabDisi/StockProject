@@ -178,7 +178,7 @@ def get_company_desc(request, company_symbol):
         return JsonResponse({'summary': comp.company_desc})
     except Exception as e:
         print(e)
-        return JsonResponse({'summary': "Couldn't find information"})
+        return JsonResponse({'summary': 'Couldn\'t find information'})
 
 
 def add_notification(request):
