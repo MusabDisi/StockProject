@@ -6,11 +6,11 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
+<h1 id="empty">Click on Search icon to start adding stocks</h1>
+
 <!-- Add stock section -->
-<h3>Add a stock</h3>
-
 <div class="searchSection">
-
+	<h3>Add a stock</h3>
 	<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
 		<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
 			<i class="material-icons" style="color:#03a9f4">search</i>
@@ -22,6 +22,7 @@
 	</div>
 	<button id="addStock" disabled class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
 		Add stock</button>
+	<div id="chips_wrapper"> </div>
 </div>
 
 
@@ -48,8 +49,11 @@
 <h1>Today's value</h1>
 <canvas id="todayChart"></canvas>
 
-
 <style>
+	#chips_wrapper {
+		display: inline-block;
+	}
+
 	.searchSection {
 		text-align: left;
 		max-height: 200px;
@@ -71,6 +75,11 @@
 		color: black;
 	}
 
+	#empty {
+		text-align: center;
+		display: none;
+	}
+
 	.timeline {
 		display: inline-block;
 		margin: 0 auto;
@@ -86,7 +95,7 @@
 
 	canvas {
 		width: 100%;
-		height: 400px;
+		height: 300px;
 	}
 </style>
 
@@ -94,16 +103,58 @@
 	const stocksRaw = "{{ stocks|escapejs }}";
 	var timelineChart = null;
 	var todayPriceChart = null;
-	const stocksColors = [];
 
 	$(document).ready(function () {
+		initSearch();
+
+		if (stocksRaw.length == 0) {
+			showEmptyState();
+			return;
+		}
+
 		requestData('1M');
 		$("ul li a").on("click", function () {
 			requestData(this.innerText);
 		});
 
-		initSearch();
+		initStocksChips();
 	});
+
+	function showEmptyState() {
+		$('h1').css('visibility', 'hidden').css('max-height', '0');
+		$('canvas').css('visibility', 'hidden').css('max-height', '0');
+		$('hr').css('visibility', 'hidden').css('max-height', '0');
+		$('.timeline').css('visibility', 'hidden').css('max-height', '0');
+		$('#progress').css('visibility', 'hidden').css('max-height', '0');
+		$('#empty').css('visibility', 'visible');
+		$('#empty').css('display', 'inline');
+	}
+
+	function initStocksChips() {
+		stocksNames = stocksRaw.split('-');
+		stocksNames.forEach((name) => {
+			$('#chips_wrapper').append(
+				'<span class="mdl-chip mdl-chip--deletable" style ="margin:4px">'
+				+ '<span class="mdl-chip__text">' + name + '</span >'
+				+ '<button type="button" class="mdl-chip__action"><i class="material-icons">cancel</i></button>'
+				+ '</span>'
+			);
+		});
+
+		// Remove click listener
+		$('#chips_wrapper button').click(function () {
+			symbol = $(this).parent().get(0).innerText.replace('cancel', '');
+			var currentStocks = stocksRaw.length == 0 ? [] : stocksRaw.split('-');
+			var newStocks = '';
+			currentStocks.forEach((stock) => {
+				if (stock != symbol) newStocks += stock + '-';
+			});
+
+			if (newStocks.endsWith('-')) newStocks = newStocks.slice(0, -1);
+
+			window.location.search = 'symbols=' + newStocks;
+		});
+	}
 
 	function initSearch() {
 		$.get("/api/stocks_names_and_symbols/", function () {
@@ -123,7 +174,11 @@
 		$('#addStock').click(function () {
 			stockSympol = $("#searchFeild").val().split('-')[0];
 			currentURL = window.location.href.replace('#', '');
-			window.location.href = currentURL + '-' + stockSympol;
+			if (currentURL.endsWith('='))
+				window.location.href = currentURL + stockSympol;
+			else
+				window.location.href = currentURL + '-' + stockSympol;
+
 		});
 	}
 
@@ -159,15 +214,8 @@
 		});
 	}
 
-	function buildStocksColors(data) {
-		for (datum of data)
-			stocksColors.push(getRandomColor());
-	}
 
 	function reflectDataOnCharts(data) {
-		// Build stock colors
-		if (stocksColors.length == 0) buildStocksColors(data);
-
 		// Build timeline chart
 		var ctx = $('#chart')[0].getContext('2d');
 		timelineChart = new Chart(ctx, {
@@ -188,8 +236,7 @@
 					datasets: [{
 						label: 'Stock price',
 						data: data.map(d => d.data[0].low),
-						backgroundColor: stocksColors.map(color => ("#80" + color)),
-						borderColor: stocksColors.map(color => ("#FF" + color)),
+						backgroundColor: '#4147e8',
 						borderWidth: 1
 					}]
 				},
