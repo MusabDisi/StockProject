@@ -100,7 +100,9 @@
 </style>
 
 <script>
-	const stocksRaw = "{{ stocks|escapejs }}";
+	var stocksRaw = "{{ stocks|escapejs }}";
+	if (stocksRaw.endsWith('/')) stocksRaw = stocksRaw.slice(0, -1);
+
 	var timelineChart = null;
 	var todayPriceChart = null;
 
@@ -131,6 +133,7 @@
 	}
 
 	function initStocksChips() {
+		console.log(stocksRaw);
 		stocksNames = stocksRaw.split('-');
 		stocksNames.forEach((name) => {
 			$('#chips_wrapper').append(
@@ -173,7 +176,10 @@
 
 		$('#addStock').click(function () {
 			stockSympol = $("#searchFeild").val().split('-')[0];
-			currentURL = window.location.href.replace('#', '');
+			currentURL = window.location.href;
+			if (currentURL.endsWith('/')) currentURL = currentURL.slice(0, -1);
+			if (currentURL.endsWith('#')) currentURL = currentURL.slice(0, -1);
+
 			if (currentURL.endsWith('='))
 				window.location.href = currentURL + stockSympol;
 			else
