@@ -2,8 +2,18 @@
 {% block content %}
 <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
 
-<div class="index">
-	<a id="btn" class="btn btn-secondary disabled" href="" role="button">Show stock info</a>
+
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+	<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
+		<i class="material-icons" id="searchIcon">search</i>
+	</label>
+	<div class="mdl-textfield__expandable-holder">
+		<input class="mdl-textfield__input" type="text" id="searchFeild" placeholder="Search">
+		<label class="mdl-textfield__label"></label>
+	</div>
+</div>
+
+<div class=" index">
 	<div id="table" class="ag-theme-material"></div>
 </div>
 
@@ -11,6 +21,15 @@
 	#table {
 		height: 600px;
 		width: 100%;
+	}
+
+	#searchFeild {
+		padding-bottom: 8px;
+		border: none;
+	}
+
+	#searchIcon {
+		color: #3492eb;
 	}
 </style>
 
@@ -32,7 +51,16 @@
 
 	var rowData = [];
 
-	const gridOptions = { columnDefs: columnsDef, rowData: rowData, rowSelection: 'multiple', onFirstDataRendered: makeColumnsFit };
+	const gridOptions = {
+		columnDefs: columnsDef,
+		rowData: rowData,
+		onFirstDataRendered: makeColumnsFit,
+		rowSelection: 'single',
+		onRowClicked: function (event) {
+			window.location.href = 'stock/' + event.data.symbol;
+		},
+
+	};
 
 	function makeColumnsFit(params) {
 		params.api.sizeColumnsToFit();
@@ -42,8 +70,14 @@
 		// Get data from django as a json
 		var data = JSON.parse('{{ data|escapejs }}');
 		initTable(data);
-		$(".index #table").click(initCompareListener);
+		initSearchBar();
 	});
+
+	function initSearchBar() {
+		$('#searchFeild').keyup(function () {
+			gridOptions.api.setQuickFilter($('#searchFeild').val());
+		});
+	}
 
 	function initTable(data) {
 		// Add data
@@ -61,37 +95,6 @@
 		// Show the grid
 		new agGrid.Grid($('.index #table')[0], gridOptions);
 		gridOptions.api.sizeColumnsToFit();
-	}
-
-	function initCompareListener() {
-		selectedNodes = gridOptions.api.getSelectedNodes();
-		const numberOfNodes = selectedNodes.length;
-
-		if (numberOfNodes == 0) {
-			$('#btn').attr('class', 'btn btn-secondary disabled');
-			$('#btn')[0].innerText = 'Show stock info';
-			return;
-		}
-
-		if (numberOfNodes == 1) {
-			$('#btn').attr('class', 'btn btn-success');
-			const symbol = selectedNodes[0].data.symbol;
-			$('#btn').attr('href', 'stock/' + symbol);
-			$('#btn')[0].innerText = 'Show (' + symbol + ') info';
-			return;
-		}
-
-		var symbols = '';
-		for (stock of selectedNodes) {
-			symbols += stock.data['symbol'] + '-';
-		}
-
-		// Remove last ;
-		symbols = symbols.slice(0, -1);
-
-		$('#btn').attr('class', 'btn btn-primary');
-		$('#btn').attr('href', 'compare?symbols=' + symbols);
-		$('#btn')[0].innerText = 'Compare stocks (' + numberOfNodes + ')';
 	}
 
 </script>
