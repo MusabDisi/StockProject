@@ -9,12 +9,10 @@
 		</h2>
 	</div>
 	<div class="col-md-3" style="float: right !important;">
-		<button id="track" type="button" class="btn btn-outline-secondary  mr-2 mt-2"
-			style="width: 100px;">Track</button>
+		<button id="notify-me-btn" type="button" class="btn btn-outline-secondary  mr-2 mt-2"
+			style="width: 100px;">Notify Me</button>
 		<button type="button" class="btn btn-outline-warning  mt-2" style="width: 100px;">favorite</button>
 		{%include 'popup_modal/popup_modal.html'%}
-		{%include 'popup_modal/popup_modal_track.html'%}
-		{%include 'popup_modal/popup_modal_analyst.html'%}
 	</div>
 
 </div>
@@ -74,15 +72,15 @@
 			<dt class="col-sm-6">Market Cap</dt>
 			<dd class="col-sm-6">{{ data.marketCap }}</dd>
 		</dl>
-		<div class="row ml-1 mt-0">
+		<!-- <div class="row ml-1 mt-0">
 			<button id="open-modal" type="button" class="btn btn-outline-info  mr-2 mt-2" style="width: 100px;">Notify
 				Me</button>
-		</div>
+		</div> -->
 	</div>
 	<div class="pt-4 col-xl-6 col-lg-6 col-md-6 col-sm-12 ">
 		<h6 id="loading">Loading graph...</h6>
 		<canvas id="stockChart"></canvas>
-		<div class="row justify-content-center">
+		<div id="interval-btns" class="row justify-content-center">
 			<ul class="nav nav-pills mb-3 mt-2" id="pills-tab" role="tablist" style="visibility: hidden;">
 				<li class="nav-item">
 					<a class="nav-link disable" data-toggle="pill" href="#1d" role="tab" aria-controls="pills-home"
@@ -129,11 +127,11 @@
 </div>
 <div class="row justify-content-start pl-4">
 	{% include 'analyst_table.html' %}
-	<div class="row ml-4 mt-1 mb-3">
+	<!-- <div class="row ml-4 mt-1 mb-3">
 		<button id="open-modal-analyst" type="button" class="btn btn-outline-info  mr-2 mt-2"
 			style="width: 100px;">Notify
 			Me</button>
-	</div>
+	</div> -->
 </div>
 
 <!-- About Company Section -->
@@ -153,18 +151,60 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
 
 
-<!-- Track modal -->
+<!-- Notifications Modal -->
 <script>
 
 	let CSRFtoken = "{{csrf_token}}";
 	let symbol = "{{data.symbol}}";
 
 	$(document).ready(function () {
-		$("#track").click(openTrackModal);
-		$(".close").click(closeTrackModal);
-		$("#submit-track").click(submitTrackingModal);
+		$("#notify-me-btn").click(openModal);
+		$("#cancel-btn").click(closeModal);
+		$('#low-checkbox').click(function () {
+			$("#low-row").toggleClass('disabled_row');
+		});
+		$('#high-checkbox').click(function () {
+			$("#high-row").toggleClass('disabled_row');
+		});
+		$("#submit-btn").click(submitModal);
 	});
 
+	function openModal() {
+
+		// high low 
+		let high = "{{ data.high }}";
+		let low = "{{ data.low }}";
+
+		if (high == 'None')
+			high = '0';
+		if (low == 'None')
+			low = '0';
+
+		$("#high").val(parseFloat(high));
+		$("#low").val(parseFloat(low));
+
+
+		$("#notifications-modal").css({ display: 'block' });
+
+	}
+
+	function closeModal() {
+		$("#notifications-modal").css({ display: 'none' });
+	}
+
+	// ================================ SUBMIT ================================================
+	function submitModal() {
+		let current_view_id = $(".tab-pane.container.active").attr("id");
+		if (current_view_id == "high-low-notif") {
+			submitHighLowModal();
+		} else if (current_view_id == "tracking-notif") {
+			submitTrackingModal();
+		} else if (current_view_id == "analyst-notif") {
+			submitModalAnalyst();
+		} else {
+			return;
+		}
+	}
 	function submitTrackingModal() {
 		let weeks = parseInt($("#week-select option:selected").val());
 		let operand = $("input[name='operandGroupRadio']:checked").attr("id");
@@ -195,60 +235,10 @@
 
 		console.log('days ' + weeks + 'operand ' + operand + ' state ' + state);
 		postTracking(state, operand, weeks, include_this_week);
-		closeTrackModal();
+		closeModal();
 	}
 
-	function postTracking(stateVal, operandVal, weeksVal, include_this_weekVal) {
-		$.post("/tracking/add/", {
-			csrfmiddlewaretoken: CSRFtoken, state: stateVal,
-			operand: operandVal, weeks: weeksVal, company_symbol: symbol,
-			include_this_week: include_this_weekVal
-		}, function () {
-			console.log("tracking submited successfully");
-		})
-			.fail(function () {
-				console.log("tracking modal submission error");
-			})
-	}
-
-	function closeTrackModal() {
-		$("#track-modal").css({ display: 'none' });
-	}
-
-	function openTrackModal() {
-		console.log("track")
-		$("#track-modal").css({ display: 'block' });
-	}
-
-</script>
-<!-- Notifications modal -->
-<script>
-	$(document).ready(function () {
-		// Notifications modal
-		$("#open-modal").click(openModal);
-		$(".close").click(closeModal);
-		$("#submit").click(submitModal);
-		$('#low-checkbox').click(function () {
-			$("#low-row").toggleClass('disabled_row');
-		});
-		$('#high-checkbox').click(function () {
-			$("#high-row").toggleClass('disabled_row');
-		});
-	});
-
-	function postNotification(operatorVal, operandVal, val) {
-		$.post("/notification/add/", {
-			csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
-			operand: operandVal, value: val, company_symbol: symbol
-		}, function () {
-			console.log("submited successfully");
-		})
-			.fail(function (e) {
-				console.log("modal submission error");
-			})
-	}
-
-	function submitModal() {
+	function submitHighLowModal() {
 		let operatorVal = $("#select-operator").val();
 		let highVal = $("#high").val();
 		let lowVal = $("#low").val();
@@ -263,35 +253,40 @@
 		closeModal();
 	}
 
-	function closeModal() {
-		$("#myModal").css({ display: 'none' });
+	function submitModalAnalyst() {
+		let operatorVal = $("#select-operator").val();
+		let scale = parseFloat($("#scale-select option:selected").val());
+
+		postNotificationAnalyst(operatorVal, scale)
+
+		closeModal();
 	}
 
-	function openModal() {
-
-		let high = "{{ data.high }}";
-		let low = "{{ data.low }}";
-
-		if (high == 'None')
-			high = '0';
-		if (low == 'None')
-			low = '0';
-
-		$("#myModal").css({ display: 'block' });
-		$("#high").val(parseFloat(high));
-		$("#low").val(parseFloat(low));
-
+	// ================================ POST ================================================
+	function postTracking(stateVal, operandVal, weeksVal, include_this_weekVal) {
+		$.post("/tracking/add/", {
+			csrfmiddlewaretoken: CSRFtoken, state: stateVal,
+			operand: operandVal, weeks: weeksVal, company_symbol: symbol,
+			include_this_week: include_this_weekVal
+		}, function () {
+			console.log("tracking submited successfully");
+		})
+			.fail(function () {
+				console.log("tracking modal submission error");
+			})
 	}
-</script>
 
-<!-- Analyst Model -->
-<script>
-	$(document).ready(function () {
-		// Notifications modal
-		$("#open-modal-analyst").click(openModalAnalyst);
-		$(".close").click(closeModalAnalyst);
-		$("#submit-analyst").click(submitModalAnalyst);
-	});
+	function postNotification(operatorVal, operandVal, val) {
+		$.post("/notification/add/", {
+			csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
+			operand: operandVal, value: val, company_symbol: symbol
+		}, function () {
+			console.log("submited successfully");
+		})
+			.fail(function (e) {
+				console.log("modal submission error");
+			})
+	}
 
 	function postNotificationAnalyst(operatorVal, val) {
 		$.post("/notification_analyst/add/", {
@@ -304,28 +299,7 @@
 				console.log("modal submission error");
 			})
 	}
-
-	function submitModalAnalyst() {
-		let operatorVal = $("#select-operator").val();
-		let scale = parseFloat($("#scale-select option:selected").val());
-
-		postNotificationAnalyst(operatorVal, scale)
-
-		closeModalAnalyst();
-	}
-
-	function closeModalAnalyst() {
-		$("#analyst-modal").css({ display: 'none' });
-	}
-
-	function openModalAnalyst() {
-
-		$("#analyst-modal").css({ display: 'block' });
-		$("#scale").val(parseFloat(scale));
-
-	}
 </script>
-
 <!-- Analyst Chart -->
 <script>
 	$(document).ready(function () {
@@ -366,66 +340,11 @@
 
 	$(document).ready(function () {
 		getRequest('1M');
-		$("ul li a").on("click", function () {
+		$("#interval-btns ul li a").on("click", function () {
 			onTimeRangeClicked(this.innerText);
 		})
-		// $("#open-modal").click(openModal);
-		// $(".close").click(closeModal);
-		// $("#submit").click(submitModal);
-		// $('#low-checkbox').click(function () {
-		// 	$("#low-row").toggleClass('disabled_row');
-		// });
-		// $('#high-checkbox').click(function () {
-		// 	$("#high-row").toggleClass('disabled_row');
-		// });
 	});
 
-	// function postNotification(operatorVal, operandVal, val) {
-	// 	let CSRFtoken = "{{csrf_token}}";
-	// 	let symbol = "{{data.symbol}}";
-	// 	$.post("/notification/add/", { csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
-	// 	 operand: operandVal, value: val, company_symbol: symbol }, function () {
-	// 		console.log("submited successfully");
-	// 	})
-	// 		.fail(function (e) {
-	// 			console.log("modal submission error");
-	// 		})
-	// }
-
-	// function submitModal() {
-	// 	let operatorVal = $("#select-operator").val();
-	// 	let highVal = $("#high").val();
-	// 	let lowVal = $("#low").val();
-
-	// 	if ($("#low-checkbox").is(':checked')) {
-	// 		postNotification(operatorVal, 'low', lowVal)
-	// 	}
-	// 	if ($("#high-checkbox").is(':checked')) {
-	// 		postNotification(operatorVal, 'high', highVal)
-	// 	}
-
-	// 	closeModal();
-	// }
-
-	// function closeModal() {
-	// 	$("#myModal").css({ display: 'none' });
-	// }
-
-	// function openModal() {
-
-	// 	let high = "{{ data.high }}";
-	// 	let low = "{{ data.low }}";
-
-	// 	if (high == 'None')
-	// 		high = '0';
-	// 	if (low == 'None')
-	// 		low = '0';
-
-	// 	$("#myModal").css({ display: 'block' });
-	// 	$("#high").val(parseFloat(high));
-	// 	$("#low").val(parseFloat(low));
-
-	// }
 
 	let mycache = {};
 	var myLineChart = null;

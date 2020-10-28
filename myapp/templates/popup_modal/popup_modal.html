@@ -1,58 +1,51 @@
 <!-- The Modal -->
-<div id="myModal" class="modal">
+<div id="notifications-modal" class="modal">
 
     <!-- Modal content -->
     <div class="modal-content">
-        <div class="row justify-content-end pr-4">
+        <!-- <div class="row justify-content-end pr-4">
             <span class="close">&times;</span>
-        </div>
-        <div class="row justify-content-start pl-4">
-            <h3>Notify me when:</h3>
-        </div>
-        <hr style="margin-top: 0.2rem;
-                    margin-bottom: 0.2rem;
-                    color:rgba(0, 0, 0, 0.6)" />  
-        <div id = "high-row" class="row justify-content-center align-items-center pt-1 disabled_row">
-            <div class="col-md-1">
-                <input type="checkbox" id="high-checkbox">
-            </div>
-            <div class="col-md-3">
-                <h4>High</h4>
-            </div>
-            <div class="col-md-3">
-                {% include 'popup_modal/select.html'%}
-            </div>
-            <div class="col-md-3">
-                <input id="high" type="number" style="width: 80px;" class="form-control" maxlength="5">
-            </div>
-        </div>
-        <div id = "low-row" class="row justify-content-center align-items-center pt-2 disabled_row">
-            <div class="col-md-1">
-                <input type="checkbox" id="low-checkbox">
-            </div>
-            <div class="col-md-3">
-                <h4>Low</h4>
-            </div>
-            <div class="col-md-3">
-                {% include 'popup_modal/select.html'%}
-            </div>
-            <div class="col-md-3">
-                <input id="low" type="number" style="width: 80px;" class="form-control" maxlength="5">
-            </div>
-        </div>
-        <div class="row">
+        </div> -->
 
+        <div class="row">
+            <div class="col-12">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#high-low-notif">Value Change</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tracking-notif">Track Stock</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#analyst-notif">Analyst Rate</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div class="row justify-content-center align-items-center pt-4" >
-            <!-- <div class="col-md-12"> -->
-                <!-- <button id="delete" type="button" class="btn btn-outline-danger mr-2">Delete</button> -->
-            <!-- <button id="show-advance" type="button" class="btn btn-primary w-100 mr-4 ml-4 ">Advanced Features</button> -->
-            <button id="submit" type="button" class="btn btn-primary w-100 mr-4 ml-4 mt-2">Submit</button>
-            <!-- </div> -->
-            <!-- <div class="col-md-3">
-                <a id="cancel"  href = "#" style="color: red;">Cancel</a>
-            </div> -->
+        <div class="tab-content">
+
+            <div class="tab-pane container active" id="high-low-notif" >
+                {% include 'popup_modal/high_low_notif.html'%}
+            </div>
+
+            <div class="tab-pane container fade" id="tracking-notif">
+                {% include 'popup_modal/tracking_notif.html'%}
+            </div>
+
+            <div class="tab-pane container fade" id="analyst-notif">
+                {% include 'popup_modal/analyst_notif.html'%}
+            </div>
             
+            <div class="row justify-content-center pt-4">
+
+                <div class="col-6 align-self-center">
+                    <button id="cancel-btn" type="button" class="btn btn-danger w-100 mt-2">Cancel</button>
+                </div>
+                <div class="col-6 align-self-center">
+                    <button id="submit-btn" type="button" class="btn btn-primary w-100 mt-2">Submit</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
