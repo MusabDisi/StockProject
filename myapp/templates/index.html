@@ -88,7 +88,7 @@
 				symbol: stock['pk'],
 				name: fields['name'],
 				price: fields['price'],
-				change: fields['change'] + '%'
+				change: (fields['change'] < 0 ? '▼ ' : '▲ ') + fields['change'] + '%'
 			});
 		});
 
