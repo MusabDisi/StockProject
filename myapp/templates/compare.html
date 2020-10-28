@@ -1,11 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- Chart library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+<!-- Autocomplete libraries -->
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-<div class="progress">
-	<div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar">
+<!-- Add stock section -->
+<h3>Add a stock</h3>
+
+<div class="searchSection">
+
+	<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+		<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
+			<i class="material-icons" style="color:#03a9f4">search</i>
+		</label>
+		<div class="mdl-textfield__expandable-holder">
+			<input class="mdl-textfield__input" type="text" id="searchFeild">
+			<label class="mdl-textfield__label" for="sample-expandable">Search for stock</label>
+		</div>
 	</div>
+	<button id="addStock" disabled class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+		Add stock</button>
 </div>
 
+
+<!-- Progress bar -->
+<div id="progress" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+
+<!-- Timeline prices chart -->
 <h1>Prices timeline</h1>
 <canvas id="chart"></canvas>
 <nav class="timeline" aria-label="Page navigation example">
@@ -20,13 +43,30 @@
 	</ul>
 </nav>
 
+<!-- Today prices chart -->
 <hr>
 <h1>Today's value</h1>
 <canvas id="todayChart"></canvas>
 
 
 <style>
-	h1 {
+	.searchSection {
+		text-align: left;
+		max-height: 200px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+
+	#addStock {
+		background-color: grey;
+		display: inline-block;
+		color: white;
+		margin: 8px;
+		text-transform: none;
+	}
+
+	h1,
+	h3 {
 		text-align: left;
 		color: black;
 	}
@@ -50,9 +90,7 @@
 	}
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
 <script>
-
 	const stocksRaw = "{{ stocks|escapejs }}";
 	var timelineChart = null;
 	var todayPriceChart = null;
@@ -62,8 +100,42 @@
 		requestData('1M');
 		$("ul li a").on("click", function () {
 			requestData(this.innerText);
-		})
+		});
+
+		initSearch();
 	});
+
+	function initSearch() {
+		$.get("/api/stocks_names_and_symbols/", function () {
+		}).done(function (data) {
+			$('#searchFeild').autocomplete({
+				source: function (request, response) {
+					var results = $.ui.autocomplete.filter(data.data, request.term);
+					response(results.slice(0, 10));
+				}
+			}, { select: onSearchDataChanged });
+			$("#searchFeild").keyup(onSearchDataChanged);
+		}).fail(function () {
+			console.log('err');
+		});
+
+
+		$('#addStock').click(function () {
+			stockSympol = $("#searchFeild").val().split('-')[0];
+			currentURL = window.location.href.replace('#', '');
+			window.location.href = currentURL + '-' + stockSympol;
+		});
+	}
+
+	function onSearchDataChanged() {
+		if ($("#searchFeild").val().trim().length == 0) {
+			$('#addStock').prop('disabled', true);
+			$('#addStock').css('background-color', 'grey');
+		} else {
+			$('#addStock').prop('disabled', false);
+			$('#addStock').css('background-color', '#03a9f4');
+		}
+	}
 
 	function requestData(interval) {
 		// Reset colors
@@ -74,12 +146,13 @@
 		$("ul li a:contains('" + interval + "')").css('color', 'white');
 		if (timelineChart != null) timelineChart.destroy();
 
-		$('.progress').css('visibility', 'visible');
+		$('#progress').css('visibility', 'visible');
 		$('.timeline').css('visibility', 'hidden');
+
 		$.get("/api/multi_historic/" + stocksRaw + "/" + interval, function () {
 		}).done(function (data) {
 			reflectDataOnCharts(data.data);
-			$('.progress').css('visibility', 'hidden');
+			$('#progress').css('visibility', 'hidden');
 			$('.timeline').css('visibility', 'visible');
 		}).fail(function () {
 			console.log('err');
@@ -130,8 +203,7 @@
 		for (stock of stocks) {
 			list.push({
 				label: stock.name,
-				borderColor: '#' + stocksColors[i],
-				backgroundColor: '#80' + stocksColors[i++],
+				borderColor: 'blue',
 				data: stock.data.map(d => d.low),
 			});
 		}
@@ -147,6 +219,7 @@
 		}
 		return color;
 	}
+
 </script>
 
 {% endblock %}

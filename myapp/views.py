@@ -135,6 +135,18 @@ def multi_stocks_historic(request, stocks, time_range='1m'):
     return JsonResponse({'data': result}, content_type="application/json")
 
 
+def stocks_names_and_symbols(request):
+    data = Stock.objects.filter(top_rank__isnull=False).order_by('name')
+    result = []
+    for datum in data:
+        result.append('{} - {}'.format(datum.symbol, datum.name))
+    # result.append({
+    #     'name': datum.name,
+    #     'symbol': datum.symbol
+    # })
+    return JsonResponse({'data': result}, content_type="application/json")
+
+
 def get_wiki_info(request, company_name):
     try:
         summary = wiki.summary(company_name, sentences=3)
