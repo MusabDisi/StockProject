@@ -234,7 +234,16 @@
 		$('#high-checkbox').click(function () {
 			$("#high-row").toggleClass('disabled_row');
 		});
+		initCompare();
 	});
+
+	function initCompare() {
+		if (window.location.href.includes('/stock/')) {
+			const homeURL = window.location.origin;
+			const symbol = window.location.href.split('/stock/')[1];
+			$('#compare').prop('href', homeURL + '/compare?symbols=' + symbol);
+		}
+	}
 
 	function postNotification(operatorVal, operandVal, val) {
 		$.post("/notification/add/", {
@@ -242,10 +251,9 @@
 			operand: operandVal, value: val, company_symbol: symbol
 		}, function () {
 			console.log("submited successfully");
+		}).fail(function (e) {
+			console.log("modal submission error");
 		})
-			.fail(function (e) {
-				console.log("modal submission error");
-			})
 	}
 
 	function submitModal() {
@@ -548,7 +556,7 @@
 					// 	intersect: false,
 					// },
 					tooltips: {
-						mode: 'x-axis' //always show tooltip 
+						mode: 'x-axis' //always show tooltip
 					},
 					legend: {
 						display: false,
