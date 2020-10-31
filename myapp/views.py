@@ -1,16 +1,25 @@
-import pathlib
-
-from dateutil.relativedelta import relativedelta, MO
 from django.conf import settings
 from django.contrib.auth import logout
 from django.core import serializers
 # import wikipedia as wiki
 from django.core.files.storage import FileSystemStorage
+import pathlib
+from dateutil.relativedelta import relativedelta, MO
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, HttpResponse
-
 from myapp import stock_api
 from myapp.models import *
+
+HTTP_200_OK = 200
+HTTP_201_CREATED = 201
+HTTP_202_ACCEPTED = 202
+HTTP_204_NO_CONTENT = 204
+HTTP_304_NOT_MODIFIED = 304
+HTTP_400_BAD_REQUEST = 400
+HTTP_401_UNAUTHORIZED = 401
+HTTP_403_FORBIDDEN = 403
+HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 
 # View for the home page - a list of 20 of the most active stocks
@@ -39,16 +48,21 @@ def compare(request):
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 def single_stock(request, symbol):
-    data = stock_api.get_stock_info(symbol)
-    recs_data = stock_api.get_analyst_recommendations(symbol)
-    rec = recs_data[0]
     try:
-        rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
-                rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
-    except TypeError:
-        rec['corporateActionsAppliedDate'] = "Unavailable"
-    # high = check_if_notification_set(request.user, symbol, 'high')
-    # low = check_if_notification_set(request.user, symbol, 'low')
+        data = stock_api.get_stock_info(symbol)
+    except Exception:
+        data = -1
+    try:
+        recs_data = stock_api.get_analyst_recommendations(symbol)
+        rec = recs_data[0]
+        try:
+            rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
+                    rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
+        except TypeError:
+            rec['corporateActionsAppliedDate'] = "Unavailable"
+    except Exception:
+        rec = -1
+
     return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
                                                  'rec': rec})
 
@@ -157,6 +171,7 @@ def get_company_desc(request, company_symbol):
         return JsonResponse({'summary': 'Couldn\'t find information'})
 
 
+@login_required
 def multi_stocks_historic(request, stocks, time_range='1m'):
     result = []
     stocks_list = stocks.split('-')
@@ -184,10 +199,13 @@ def add_notification(request):
                                         , operand=request.POST.get('operand').strip()
                                         , value=request.POST.get('value').strip()
                                         , company_symbol=request.POST.get('company_symbol').strip())
+
             notification.save()
-    return HttpResponse(status=204)
+
+    return HttpResponse(status=HTTP_204_NO_CONTENT)
 
 
+@login_required
 def my_notifications(request):
     waiting_notifs = Notification.objects.filter(user=request.user)
     active_notifs = ReadyNotification.objects.filter(user=request.user)
@@ -203,8 +221,8 @@ def my_notifications(request):
     return render(request, 'my_notifications.html', context)
 
 
+@login_required
 def delete_active_notification(request, pk='-1'):
-    print('delete active')
     if request.user.is_authenticated:
         if pk != '-1':
             n = ReadyNotification.objects.filter(user=request.user, id=pk)
@@ -214,6 +232,7 @@ def delete_active_notification(request, pk='-1'):
     return redirect('my_notifications')
 
 
+@login_required
 def delete_waiting_notification(request, pk='-1'):
     if request.user.is_authenticated:
         if pk != '-1':
@@ -243,30 +262,33 @@ def get_time(include_this_week):
 
 
 # TODO: show feedback to user
+@login_required
 def add_tracking(request):
     if request.method == "POST":
         if request.user.is_authenticated:
             post = request.POST
-            print(post)
             track = TrackStock(user=request.user, operand=int(post.get('operand')), state=int(post.get('state'))
                                , weeks=int(post.get('weeks')), company_symbol=post.get('company_symbol'),
                                creation_time=get_time(post.get('include_this_week')))
             track.save()
-    return HttpResponse(status=204)
+
+    return HttpResponse(status=HTTP_204_NO_CONTENT)
 
 
+@login_required
 def add_notification_analyst(request):
     if request.method == "POST":
         if request.user.is_authenticated:
             post = request.POST
-            print(post)
             notif = NotificationAnalystRec(user=request.user, operator=post.get('operator').strip()
                                            , value=post.get('value').strip()
                                            , company_symbol=post.get('company_symbol').strip())
             notif.save()
-    return HttpResponse(status=204)
+
+    return HttpResponse(status=HTTP_204_NO_CONTENT)
 
 
+@login_required
 def delete_tracking_notification(request, pk='-1'):
     if request.user.is_authenticated:
         if pk != '-1':
@@ -277,6 +299,7 @@ def delete_tracking_notification(request, pk='-1'):
     return redirect('my_notifications')
 
 
+@login_required
 def delete_analyst_notification(request, pk='-1'):
     if request.user.is_authenticated:
         if pk != '-1':
