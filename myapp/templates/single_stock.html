@@ -167,6 +167,7 @@
 			$("#high-row").toggleClass('disabled_row');
 		});
 		$("#submit-btn").click(submitModal);
+		initCompare();
 	});
 
 	function openModal() {
@@ -282,10 +283,9 @@
 			operand: operandVal, value: val, company_symbol: symbol
 		}, function () {
 			console.log("submited successfully");
+		}).fail(function (e) {
+			console.log("modal submission error");
 		})
-			.fail(function (e) {
-				console.log("modal submission error");
-			})
 	}
 
 	function postNotificationAnalyst(operatorVal, val) {
@@ -298,6 +298,15 @@
 			.fail(function (e) {
 				console.log("modal submission error");
 			})
+	}
+
+	//=====================================COMPARE===========================
+	function initCompare() {
+		if (window.location.href.includes('/stock/')) {
+			const homeURL = window.location.origin;
+			const symbol = window.location.href.split('/stock/')[1];
+			$('#compare').prop('href', homeURL + '/compare?symbols=' + symbol);
+		}
 	}
 </script>
 <!-- Analyst Chart -->
@@ -467,7 +476,7 @@
 					// 	intersect: false,
 					// },
 					tooltips: {
-						mode: 'x-axis' //always show tooltip 
+						mode: 'x-axis' //always show tooltip
 					},
 					legend: {
 						display: false,
