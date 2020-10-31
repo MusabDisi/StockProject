@@ -66,16 +66,21 @@ def index(request, page='1'):
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
 def single_stock(request, symbol):
-    data = stock_api.get_stock_info(symbol)
-    recs_data = stock_api.get_analyst_recommendations(symbol)
-    rec = recs_data[0]
     try:
-        rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
-                rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
-    except TypeError:
-        rec['corporateActionsAppliedDate'] = "Unavailable"
-    # high = check_if_notification_set(request.user, symbol, 'high')
-    # low = check_if_notification_set(request.user, symbol, 'low')
+        data = stock_api.get_stock_info(symbol)
+    except Exception:
+        data = -1
+    try:
+        recs_data = stock_api.get_analyst_recommendations(symbol)
+        rec = recs_data[0]
+        try:
+            rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
+                    rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
+        except TypeError:
+            rec['corporateActionsAppliedDate'] = "Unavailable"
+    except Exception:
+        rec = -1
+
     return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
                                                  'rec': rec})
 

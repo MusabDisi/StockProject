@@ -5,6 +5,7 @@ from django.utils.timezone import now
 from myapp import stock_api
 import datetime
 from dateutil.relativedelta import relativedelta, FR
+from django.core.cache import cache
 
 
 # When we already have a job running what to do? we can use max_instances keyword
@@ -39,13 +40,28 @@ class NotificationsScheduler:
 
     @staticmethod
     def get_value_of(symbol, operand):
-        return stock_api.get_stock_info_notification(symbol, operand)
+        cached = cache.get(symbol + operand)  # ex: AAPLHigh or None
+        if cached:
+            print('cached')
+            return cached
+        else:
+            data = stock_api.get_stock_info_notification(symbol, operand)
+            cache.set(symbol + operand, data, (30 * 60))  # cache for 30 mins
+            return data
 
     @staticmethod
     def get_analyst_record_of(symbol):
-        data = stock_api.get_analyst_recommendations(symbol)
-        rec = data[0]
-        return rec.get('ratingScaleMark')
+        cached = cache.get(symbol + 'analystRec')
+        if cached:
+            print('cached')
+            return cached
+        else:
+            data = stock_api.get_analyst_recommendations(symbol)
+            rec = data[0]
+            rec = rec.get('ratingScaleMark')
+            cache.set(symbol + 'analystRec', rec, (30 * 60))  # cache for 30 mins
+            return rec
+
 
     @staticmethod
     def is_bigger(value, api_value):

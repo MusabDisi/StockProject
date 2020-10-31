@@ -135,3 +135,10 @@ LOGIN_REDIRECT_URL = '/'
 
 MEDIA_URL = 'myapp/static/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'myapp/static/media')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
+    }
+}
