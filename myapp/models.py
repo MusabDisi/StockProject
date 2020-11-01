@@ -30,6 +30,14 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     avatar = models.CharField(max_length=100)
 
+class StockOperation(models.Model):
+    stock = models.OneToOneField(Stock, on_delete=models.DO_NOTHING)
+    stock_number = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    
+class UserStock(models.Model):
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+    stock_buyied =  models.ManyToManyField(StockOperation)
+    budget = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 
 class TrackStock(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
