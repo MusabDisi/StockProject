@@ -37,6 +37,7 @@ HTTP_500_INTERNAL_SERVER_ERROR = 500
 def index(request):
     notifications = ''
     number_of_notifs = 0
+    favorite_stocks = []
     if request.user.is_authenticated:
         notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')
         number_of_notifs = len(notifications)
