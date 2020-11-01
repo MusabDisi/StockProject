@@ -3,9 +3,10 @@ from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from . import views
+from . import views, views_ajax
 from myapp.notif_scheduler import NotificationsScheduler
 
+	
 urlpatterns = [
     path('', views.index, name='index'),
     path('exchange', views.exchange, name='exchange'),
@@ -17,9 +18,10 @@ urlpatterns = [
     path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('accounts/logout/', views.logout_view, name='logout'),
     path('accounts/register/', views.register, name='register'),
-    path('accounts/register/', views.register, name='register'),
     path('accounts/profile/', views.user_profile, name='profile'),
     path('accounts/edit_profile/', views.edit_profile, name='edit_profile'),
+    path('accounts/favourite_stock/', views.favorite_stock, name='favorite_stock'),
+    path('favstock', views_ajax.fav_stock, name='edit_fav_stock'),
     path('stocks/buy/', views.buy_stock, name='buy_stocks'),
     path('notification/add/', views.add_notification, name='notification'),  # add notification to db
     path('accounts/my_notifications/', views.my_notifications, name='my_notifications'),
@@ -31,8 +33,7 @@ urlpatterns = [
          name='delete_analyst_notification'),
     path('company/get_description/<str:company_symbol>', views.get_company_desc, name="get_company_description"),
     path('tracking/add/', views.add_tracking, name='add_tracking'),
-    path('notification_analyst/add/', views.add_notification_analyst, name='notification-analyst'),
-
+    path('notification_analyst/add/', views.add_notification_analyst, name='notification-analyst')
 ]
 
 if settings.DEBUG:

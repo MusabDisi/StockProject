@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.http import QueryDict
 from django.urls import reverse
-from myapp.models import Stock, UserProfile, UserStock, StockOperation
+from myapp.models import Stock, UserProfile, UserStock, StockOperation, FavoriteStock
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -32,6 +32,7 @@ HTTP_403_FORBIDDEN = 403
 HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 
+
 # View for the home page - a list of 20 of the most active stocks
 def index(request):
     notifications = ''
@@ -40,6 +41,11 @@ def index(request):
         notifications = ReadyNotification.objects.filter(user=request.user).order_by('-id')
         number_of_notifs = len(notifications)
         notifications = notifications[:5]  # only recent 5
+        user = request.user
+        try:
+          favorite_stocks = FavoriteStock.objects.get(user_id = user.id).stocks.values_list('symbol', flat=True).all()
+        except Exception as e:
+          favorite_stocks = []
 
     data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
 
@@ -47,9 +53,14 @@ def index(request):
         'page_title': 'Main',
         'data': serializers.serialize('json', data),
         'notifications': notifications,
-        'number_of_notifs': number_of_notifs
+        'number_of_notifs': number_of_notifs,
+        'favorite_stocks': favorite_stocks
     })
 
+def favorite_stock(request):
+	user = request.user
+	data = FavoriteStock.objects.get(user_id = user.id).stocks.order_by('top_rank').all()
+	return render(request, 'fav_stocks.html', {'page_title': 'Favorite Stokes', 'data': data })
 
 def compare(request):
     return render(request, 'compare.html', {'stocks': request.GET.get('symbols')})
