@@ -4,31 +4,27 @@
     <div class="">
         <h3> Budget {{user_budget}}
     </div>
+
     <div class="row justify-content-md-center">
         <div class="table-responsive col-md-6">
-            <div> <p>Stocks to Buy</p></div>
-            <table id="sellTable" class="table table-hover data-table ">
-                <tr>
-                    <th>Symbol</th>
-                    <th>Price</th>
-                    <th>Change</th>
-                </tr>
-                {% for stock in stocks %}
-                    <tr onclick="getColumnValue('buy', '{{ stock.symbol }}')">
-                        <td>{{ stock.symbol }}</td>
-                        <td>{{ stock.price|floatformat:2 }}</td>
-                        <td class="
-                        {% if stock.change_percent >= 0 %}
-                            text-success
-                        {% else %}
-                            text-danger
-                        {% endif %}
-                        ">{{ stock.change_percent|floatformat:2 }}%</td>
+            <div> <p>Stocks to Sell</p></div>
+            {% comment %} add to sell with search {% endcomment %}
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+                <label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
+                    <i class="material-icons" id="searchBuyIcon">search</i>
+                </label>
+                <div class="mdl-textfield__expandable-holder">
+                    <input class="mdl-textfield__input" type="text" id="searchFeild" placeholder="Search">
+                    <label class="mdl-textfield__label"></label>
+                </div>
+            </div>
 
-                    </tr>
-                {% endfor %}
-            </table>
+            <div class=" index">
+                <div id="buytable" class="ag-theme-material"></div>
+            </div>
+
         </div>
+        {% comment %} This end {% endcomment %}
         <div class="table-responsive col-md-6">
             <div> <p>Stocks to Sell</p></div>
 
@@ -49,28 +45,7 @@
             </table>
         </div>
 
-<div class="modal" id="sellModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <h4 class="modal-title">Modal Heading</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            
-            <!-- Modal body -->
-            <div class="modal-body">
-                Modal body..
-            </div>
-            
-            <!-- Modal footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-            </div>
-        
-        </div>
-    </div>
-</div>
+
 <div class="modal" id="buyModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -103,6 +78,21 @@
 </div>
 
 
+<style>
+	#buytable {
+		height: 600px;
+		width: 100%;
+	}
+
+	#searchFeild {
+		padding-bottom: 8px;
+		border: none;
+	}
+
+	#searchBuyIcon {
+		color: #3492eb;
+	}
+</style>
 {% endblock %}
 {% block scripts %}
 <script>
@@ -141,7 +131,65 @@ function buyStock(){
                 }
         });
     $("#buyModal").modal('hide');
-
 }
+ {% comment %} This to search grid {% endcomment %}
+const columnsDef = [
+		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Price", field: "price", sortable: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Change", field: "change", sortable: true, cellStyle: cellColor }
+	];
+
+	function cellColor(params) {
+		if (params.value.includes('-'))
+			return { color: 'red', textAlign: 'left' };
+		return { color: 'green', textAlign: 'left' };
+	}
+
+	var rowData = [];
+
+	const gridOptions = {
+		columnDefs: columnsDef,
+		rowData: rowData,
+		onFirstDataRendered: makeColumnsFit,
+		rowSelection: 'single',
+		onRowClicked: (event) => {
+            getColumnValue('buy', event.data.symbol)
+		},
+
+	};
+
+	function makeColumnsFit(params) {
+		params.api.sizeColumnsToFit();
+	}
+
+	$(document).ready(function () {
+		// Get stocks from django as a json
+		var stocks = JSON.parse('{{ stocks|escapejs }}');
+		initTable(stocks);
+		initSearchBar();
+	});
+
+	function initSearchBar() {
+		$('#searchFeild').keyup(function () {
+			gridOptions.api.setQuickFilter($('#searchFeild').val());
+		});
+	}
+
+	function initTable(stocks) {
+		// Add stocks
+		stocks.forEach(function (stock) {
+			fields = stock['fields'];
+			rowData.push({
+				symbol: stock['pk'],
+				price: fields['price'],
+				change: (fields['change'] < 0 ? '▼ ' : '▲ ') + fields['change'] + '%'
+			});
+		});
+
+		// Show the grid
+		new agGrid.Grid($('.index #buytable')[0], gridOptions);
+		gridOptions.api.sizeColumnsToFit();
+	}
+
 </script>
 {% endblock scripts %}
