@@ -43,7 +43,9 @@ def index(request):
         notifications = notifications[:5]  # only recent 5
         user = request.user
         try:
+
             favorite_stocks = FavoriteStock.objects.get(user_id=request.user.id).stocks.all()
+
         except Exception as e:
             favorite_stocks = []
 
@@ -72,9 +74,10 @@ def exchange(request):
         return redirect(reverse('login'))
     user = request.user
     user_stocks = UserStock.objects.get(user_id=user.id)
-    stocks = Stock.objects.all()
+    stocks = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
     return render(request, 'exchange.html',
-                  {'user_stocks': user_stocks.stock_buyied.all(), 'stocks': stocks, 'user_budget': user_stocks.budget})
+                  {'user_stocks': user_stocks.stock_buyied.all(), 'stocks': serializers.serialize('json', stocks),
+                   'user_budget': user_stocks.budget})
 
 
 # View for the single stock page
@@ -99,7 +102,7 @@ def single_stock(request, symbol):
         try:
             favorite = FavoriteStock.objects.get(user_id=request.user.id).stocks.values_list('symbol', flat=True).all()
         except Exception as e:
-            favorite = False
+            pass
     is_favorite = True if symbol in favorite else False
     return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
                                                  'rec': rec, 'is_favorite': is_favorite}, )
