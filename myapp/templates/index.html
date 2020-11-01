@@ -33,8 +33,8 @@
 	}
 </style>
 
-<script>
-
+<script type='text/javascript'>
+	const fav = 	JSON.parse('{{ favorite_stocks|escapejs }}').map(elm => elm.pk)
 	const columnsDef = [
 		{ headerName: "Rank", field: "rank", sortable: true, cellStyle: { textAlign: 'left' } },
 		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
@@ -83,8 +83,9 @@
 		// Add data
 		data.forEach(function (stock) {
 			fields = stock['fields'];
+			fav_icon = fav.includes(stock['pk'])? '⭐️' : ''
 			rowData.push({
-				rank: fields['top_rank'],
+				rank: fields['top_rank'] + fav_icon,
 				symbol: stock['pk'],
 				name: fields['name'],
 				price: fields['price'],

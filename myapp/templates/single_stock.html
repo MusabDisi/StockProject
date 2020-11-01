@@ -8,12 +8,15 @@
 			<small id="symbol" class="text-muted">({{ data.symbol }})</small>
 		</h2>
 	</div>
-	<div class="col-md-3" style="float: right !important;">
-		<button id="notify-me-btn" type="button" class="btn btn-outline-secondary  mr-2 mt-2"
-			style="width: 100px;">Notify Me</button>
-		<button type="button" class="btn btn-outline-warning  mt-2" style="width: 100px;">favorite</button>
-		{%include 'popup_modal/popup_modal.html'%}
-	</div>
+	{% if user.is_authenticated %}
+		<div class="col-md-3" style="float: right !important;">
+			<button id="notify-me-btn" type="button" class="btn btn-outline-secondary  mr-2 mt-2"
+				style="width: 100px;">Notify Me</button>
+			<button id="fav-me-btn" type="button" class="btn btn-outline-warning  mt-2 fa  {% if is_favorite%}fa-star{% endif %}" style="width: 100px;">  favorite</button>
+			{%include 'popup_modal/popup_modal.html'%}
+		</div>
+	{% endif %}
+
 
 </div>
 
@@ -159,6 +162,7 @@
 
 	$(document).ready(function () {
 		$("#notify-me-btn").click(openModal);
+		$("#fav-me-btn").click(setFav);
 		$("#cancel-btn").click(closeModal);
 		$('#low-checkbox').click(function () {
 			$("#low-row").toggleClass('disabled_row');
@@ -187,6 +191,25 @@
 
 		$("#notifications-modal").css({ display: 'block' });
 
+	}
+
+	function setFav() {
+		var method = 'PUT'
+        if ($("#fav-me-btn").hasClass('fa-star')) {
+            method = 'DELETE'
+        }
+				let low2 = "{{ is_favorite }}";
+				console.log(`the method is ${method}  value ${low2}`)
+        $.ajax({
+            url: '{% url 'edit_fav_stock' %}',
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            method: method,
+            data: {
+                'symbol': symbol
+            },
+            dataType: 'json',
+            success: function (data) {
+               $("#fav-me-btn").toggleClass('fa-star')}});
 	}
 
 	function closeModal() {
