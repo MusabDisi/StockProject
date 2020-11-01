@@ -32,7 +32,6 @@ HTTP_403_FORBIDDEN = 403
 HTTP_500_INTERNAL_SERVER_ERROR = 500
 
 
-
 # View for the home page - a list of 20 of the most active stocks
 def index(request):
     notifications = ''
@@ -44,9 +43,9 @@ def index(request):
         notifications = notifications[:5]  # only recent 5
         user = request.user
         try:
-          favorite_stocks = FavoriteStock.objects.get(user_id = request.user.id).stocks.all()
+            favorite_stocks = FavoriteStock.objects.get(user_id=request.user.id).stocks.all()
         except Exception as e:
-          favorite_stocks = []
+            favorite_stocks = []
 
     data = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
     return render(request, 'index.html', {
@@ -57,21 +56,26 @@ def index(request):
         'favorite_stocks': serializers.serialize('json', favorite_stocks),
     })
 
+
 def favorite_stock(request):
-	user = request.user
-	data = FavoriteStock.objects.get(user_id = user.id).stocks.order_by('top_rank').all()
-	return render(request, 'fav_stocks.html', {'page_title': 'Favorite Stokes', 'data': data })
+    user = request.user
+    data = FavoriteStock.objects.get(user_id=user.id).stocks.order_by('top_rank').all()
+    return render(request, 'fav_stocks.html', {'page_title': 'Favorite Stokes', 'data': data})
+
 
 def compare(request):
     return render(request, 'compare.html', {'stocks': request.GET.get('symbols')})
 
+
 def exchange(request):
-	if not request.user.is_authenticated:
-		return redirect(reverse('login'))
-	user = request.user
-	user_stocks = UserStock.objects.get(user_id=user.id)
-	stocks = Stock.objects.all()
-	return render(request, 'exchange.html', {'user_stocks': user_stocks.stock_buyied.all(), 'stocks': stocks, 'user_budget': user_stocks.budget})
+    if not request.user.is_authenticated:
+        return redirect(reverse('login'))
+    user = request.user
+    user_stocks = UserStock.objects.get(user_id=user.id)
+    stocks = Stock.objects.all()
+    return render(request, 'exchange.html',
+                  {'user_stocks': user_stocks.stock_buyied.all(), 'stocks': stocks, 'user_budget': user_stocks.budget})
+
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
@@ -93,7 +97,7 @@ def single_stock(request, symbol):
     favorite = []
     if request.user.is_authenticated:
         try:
-            favorite = FavoriteStock.objects.get(user_id = request.user.id).stocks.values_list('symbol', flat=True).all()
+            favorite = FavoriteStock.objects.get(user_id=request.user.id).stocks.values_list('symbol', flat=True).all()
         except Exception as e:
             favorite = False
     is_favorite = True if symbol in favorite else False
@@ -144,6 +148,7 @@ def user_profile(request):
         return render(request, 'profile.html',
                       {'page_title': 'User Profile', 'user': user, 'media_url': settings.MEDIA_URL, 'avatar': avatar})
     return render(request, 'register.html', {'page_title': 'Register'})
+
 
 def buy_stock(request):
     if not request.user.is_authenticated:
