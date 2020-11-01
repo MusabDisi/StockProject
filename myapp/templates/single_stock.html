@@ -1,36 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-12 text-left">
+<div class="row align-items-center pr-3">
+	<div class="col-9 col-md-9 text-left">
 		<h2 class="display-4">
-				{{ data.companyName }}
-				<small class="text-muted">({{ data.symbol }})</small>
+			{{ data.companyName }}
+			<small id="symbol" class="text-muted">({{ data.symbol }})</small>
 		</h2>
+	</div>
+	<div class="col-md-3" style="float: right !important;">
+		<button id="notify-me-btn" type="button" class="btn btn-outline-secondary  mr-2 mt-2"
+			style="width: 100px;">Notify Me</button>
+		<button type="button" class="btn btn-outline-warning  mt-2" style="width: 100px;">favorite</button>
+		{%include 'popup_modal/popup_modal.html'%}
+	</div>
+
 </div>
 
-<div class="col-md-12 text-left">
-		<p class="lead">{{ data.primaryExchange }}</p>
-</div>
-
-<div class="col-md-12 text-left">
-	<span class="lead">
-	<big>
-			{{ data.latestPrice }}
-			<small class="lead">
+<!-- <div class="col-md-12 text-left">
+	<p class="lead">{{ data.primaryExchange }}</p>
+	<a href="https://iexcloud.io">Data provided by IEX Cloud</a>
+</div> -->
+<div class="row align-items-center pl-3">
+	<div class="col-md-12 text-left">
+		<span class="lead">
+			<big>
+				{{ data.latestPrice }}
+				<small class="lead">
 					{% if data.changePercent >= 0 %}
-									<span class="text-success">+{{ data.change }} (+{{ data.changePercent }}%)</span>
-							{% else %}
-									<span class="text-danger">{{ data.change }} ({{ data.changePercent }}%)</span>
-							{% endif %}
-			</small>
-	</big>
-	</span>
-	<br>
-	<small class="text-muted">Updated time: {{ data.latestTime }}</small>
+					<span class="text-success">+{{ data.change }} (+{{ data.changePercent|floatformat:4 }}%)</span>
+					{% else %}
+					<span class="text-danger">{{ data.change }} ({{ data.changePercent|floatformat:4 }}%)</span>
+					{% endif %}
+				</small>
+			</big>
+		</span>
+		<br>
+		<small class="text-muted">Updated time: {{ data.latestTime }}</small>
+	</div>
 </div>
-<div class="row">
-	<div class="pt-4 col-sm-6 pl-5">
+
+
+<div class="row align-items-center" style="height: 400px;">
+	<div class="pt-4 col-xl-6 col-lg-6 col-md-6 col-sm-12 pl-5">
 		<dl class="row text-left">
+			<dt class="col-sm-6">Open</dt>
+			<dd class="col-sm-6">{{ data.open }}</dd>
+
+			<dt class="col-sm-6">High</dt>
+			<dd id="dd-high" class="col-sm-6">{{ data.high }}</dd>
+
+			<dt class="col-sm-6">Low</dt>
+			<dd id="dd-low" class="col-sm-6">{{ data.low }}</dd>
+
 			<dt class="col-sm-6">Previous Close</dt>
 			<dd class="col-sm-6">{{ data.previousClose }}</dd>
 
@@ -50,66 +72,457 @@
 			<dt class="col-sm-6">Market Cap</dt>
 			<dd class="col-sm-6">{{ data.marketCap }}</dd>
 		</dl>
+		<!-- <div class="row ml-1 mt-0">
+			<button id="open-modal" type="button" class="btn btn-outline-info  mr-2 mt-2" style="width: 100px;">Notify
+				Me</button>
+		</div> -->
 	</div>
-
-	<div class="pt-4 col-sm-6">
+	<div class="pt-4 col-xl-6 col-lg-6 col-md-6 col-sm-12 ">
+		<h6 id="loading">Loading graph...</h6>
 		<canvas id="stockChart"></canvas>
-		<!-- WIP TAB DESIGN
-		<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-		  <li class="nav-item">
-			<a class="nav-link" data-toggle="pill" href="#1w" role="tab" aria-controls="pills-home" aria-selected="true">1W</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile" aria-selected="false">1M</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" data-toggle="pill" href="#3m" role="tab" aria-controls="pills-contact" aria-selected="false">3M</a>
-		  </li>
-			<li class="nav-item">
-			<a class="nav-link" data-toggle="pill" href="#6m" role="tab" aria-controls="pills-contact" aria-selected="false">6M</a>
-		  </li>
-			<li class="nav-item">
-			<a class="nav-link" data-toggle="pill" href="#1y" role="tab" aria-controls="pills-contact" aria-selected="false">1Y</a>
-		  </li>
-			<li class="nav-item">
-			<a class="nav-link" data-toggle="pill" href="#max" role="tab" aria-controls="pills-contact" aria-selected="false">Max</a>
-		  </li>
-		</ul>
-		-->
+		<div id="interval-btns" class="row justify-content-center">
+			<ul class="nav nav-pills mb-3 mt-2" id="pills-tab" role="tablist" style="visibility: hidden;">
+				<li class="nav-item">
+					<a class="nav-link disable" data-toggle="pill" href="#1d" role="tab" aria-controls="pills-home"
+						aria-selected="false">1D</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link disable" data-toggle="pill" href="#5d" role="tab" aria-controls="pills-home"
+						aria-selected="false">5D</a>
+				</li>
+				<!-- <li class="nav-item " style="pointer-events:none; opacity:0.6;">
+					<a class="nav-link" data-toggle="pill" href="#1w" role="tab" aria-controls="pills-home"
+						aria-selected="false">1W</a>
+				</li> -->
+				<li class="nav-item">
+					<a class="nav-link active" data-toggle="pill" href="#1m" role="tab" aria-controls="pills-profile"
+						aria-selected="true">1M</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#3m" role="tab" aria-controls="pills-contact"
+						aria-selected="false">3M</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#6m" role="tab" aria-controls="pills-contact"
+						aria-selected="false">6M</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#1y" role="tab" aria-controls="pills-contact"
+						aria-selected="false">1Y</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="pill" href="#max" role="tab" aria-controls="pills-contact"
+						aria-selected="false">Max</a>
+				</li>
+			</ul>
+		</div>
 	</div>
+</div>
+
+<!-- <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/> -->
+
+<!-- Analyst Recommendations -->
+<div class="row justify-content-start pl-4">
+	<h4>Analyst Recommendations</h4>
+</div>
+<div class="row justify-content-start pl-4">
+	{% include 'analyst_table.html' %}
+	<!-- <div class="row ml-4 mt-1 mb-3">
+		<button id="open-modal-analyst" type="button" class="btn btn-outline-info  mr-2 mt-2"
+			style="width: 100px;">Notify
+			Me</button>
+	</div> -->
+</div>
+
+<!-- About Company Section -->
+<div class="row justify-content-start pl-4">
+	<h4>About Company</h4>
+</div>
+<div class="row justify-content-start pl-4">
+	<p id="about-company" style="text-align:left"></p>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-	$(document).ready(function(){
-		$.get( "/historic/{{ data.symbol }}/", function( data ) {
-			historic_data = data.data.sort(function(a, b) { return a.date - b.date; })
 
-			var ctxL = document.getElementById("stockChart").getContext('2d');
-			var myLineChart = new Chart(ctxL, {
+{% load static %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+
+
+<!-- Notifications Modal -->
+<script>
+
+	let CSRFtoken = "{{csrf_token}}";
+	let symbol = "{{data.symbol}}";
+
+	$(document).ready(function () {
+		$("#notify-me-btn").click(openModal);
+		$("#cancel-btn").click(closeModal);
+		$('#low-checkbox').click(function () {
+			$("#low-row").toggleClass('disabled_row');
+		});
+		$('#high-checkbox').click(function () {
+			$("#high-row").toggleClass('disabled_row');
+		});
+		$("#submit-btn").click(submitModal);
+		initCompare();
+	});
+
+	function openModal() {
+
+		// high low 
+		let high = "{{ data.high }}";
+		let low = "{{ data.low }}";
+
+		if (high == 'None')
+			high = '0';
+		if (low == 'None')
+			low = '0';
+
+		$("#high").val(parseFloat(high));
+		$("#low").val(parseFloat(low));
+
+
+		$("#notifications-modal").css({ display: 'block' });
+
+	}
+
+	function closeModal() {
+		$("#notifications-modal").css({ display: 'none' });
+	}
+
+	// ================================ SUBMIT ================================================
+	function submitModal() {
+		let current_view_id = $(".tab-pane.container.active").attr("id");
+		if (current_view_id == "high-low-notif") {
+			submitHighLowModal();
+		} else if (current_view_id == "tracking-notif") {
+			submitTrackingModal();
+		} else if (current_view_id == "analyst-notif") {
+			submitModalAnalyst();
+		} else {
+			return;
+		}
+	}
+	function submitTrackingModal() {
+		let weeks = parseInt($("#week-select option:selected").val());
+		let operand = $("input[name='operandGroupRadio']:checked").attr("id");
+		let state = $("input[name='stateGroupRadio']:checked").attr("id");
+		let checkBox = $("#this-week-cb").is(":checked");
+		let include_this_week = -1;
+
+		if (checkBox) {
+			include_this_week = 1;
+		}
+
+		if (isNaN(weeks) || weeks < 0 || weeks > 8) {
+			// $("#warning").css({display: 'inline'});
+			return;
+		}
+
+		if (operand == 'high-rd') {
+			operand = 1;
+		} else {
+			operand = -1;
+		}
+
+		if (state == 'increasing-rd') {
+			state = 1;
+		} else {
+			state = -1;
+		}
+
+		console.log('days ' + weeks + 'operand ' + operand + ' state ' + state);
+		postTracking(state, operand, weeks, include_this_week);
+		closeModal();
+	}
+
+	function submitHighLowModal() {
+		let operatorVal = $("#select-operator").val();
+		let highVal = $("#high").val();
+		let lowVal = $("#low").val();
+
+		if ($("#low-checkbox").is(':checked')) {
+			postNotification(operatorVal, 'low', lowVal)
+		}
+		if ($("#high-checkbox").is(':checked')) {
+			postNotification(operatorVal, 'high', highVal)
+		}
+
+		closeModal();
+	}
+
+	function submitModalAnalyst() {
+		let operatorVal = $("#select-operator").val();
+		let scale = parseFloat($("#scale-select option:selected").val());
+
+		postNotificationAnalyst(operatorVal, scale)
+
+		closeModal();
+	}
+
+	// ================================ POST ================================================
+	function postTracking(stateVal, operandVal, weeksVal, include_this_weekVal) {
+		$.post("/tracking/add/", {
+			csrfmiddlewaretoken: CSRFtoken, state: stateVal,
+			operand: operandVal, weeks: weeksVal, company_symbol: symbol,
+			include_this_week: include_this_weekVal
+		}, function () {
+			console.log("tracking submited successfully");
+		})
+			.fail(function () {
+				console.log("tracking modal submission error");
+			})
+	}
+
+	function postNotification(operatorVal, operandVal, val) {
+		$.post("/notification/add/", {
+			csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
+			operand: operandVal, value: val, company_symbol: symbol
+		}, function () {
+			console.log("submited successfully");
+		}).fail(function (e) {
+			console.log("modal submission error");
+		})
+	}
+
+	function postNotificationAnalyst(operatorVal, val) {
+		$.post("/notification_analyst/add/", {
+			csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
+			value: val, company_symbol: symbol
+		}, function () {
+			console.log("submited successfully");
+		})
+			.fail(function (e) {
+				console.log("modal submission error");
+			})
+	}
+
+	//=====================================COMPARE===========================
+	function initCompare() {
+		if (window.location.href.includes('/stock/')) {
+			const homeURL = window.location.origin;
+			const symbol = window.location.href.split('/stock/')[1];
+			$('#compare').prop('href', homeURL + '/compare?symbols=' + symbol);
+		}
+	}
+</script>
+<!-- Analyst Chart -->
+<script>
+	$(document).ready(function () {
+		drawAnalystChart();
+	});
+
+
+	function drawAnalystChart() {
+		var canvas = document.getElementById("analyst-chart");
+		let ctxL = canvas.getContext('2d');
+		let data = ["{{rec.ratingSell}}", "{{rec.ratingHold}}", "{{rec.ratingBuy}}", "{{rec.ratingOverweight}}", "{{rec.ratingUnderweight}}"];
+		let labels = ["Sell Rating(s)", "Hold Rating(s)", "Buy Rating(s)", "Overweight Rating(s)", "Overweight Rating(s)"];
+		new Chart(ctxL, {
+			type: 'radar',
+			data: {
+				labels: labels,
+				datasets: [
+					{
+						label: symbol,
+						data: data,
+						backgroundColor: 'rgba(105, 0, 132, .2)',
+						borderColor: 'rgba(200, 99, 132, .7)',
+						borderWidth: 2,
+					}
+				]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+			}
+		});
+
+	}
+
+</script>
+<script>
+	getWiki("{{data.symbol}}");
+
+	$(document).ready(function () {
+		getRequest('1M');
+		$("#interval-btns ul li a").on("click", function () {
+			onTimeRangeClicked(this.innerText);
+		})
+	});
+
+
+	let mycache = {};
+	var myLineChart = null;
+
+	function getWiki(name) {
+		$.get("/company/get_description/" + name, function () {
+
+		}).done(function (data) {
+			console.log(data);
+			$("#about-company").html(data.summary);
+		}).fail(function () {
+			$("#about-company").text("couldn't find data.");
+		});
+	}
+
+	function onTimeRangeClicked(range) {
+		getRequest(range);
+
+	}
+
+	function getRequest(time_range) {
+		console.log(time_range);
+		if (time_range in mycache) { // if we already called api and value is saved
+			console.log("from cache");
+			$("#loading").hide();
+			drawChart(mycache[time_range], "{{ data.symbol }}");
+		} else {
+			console.log("no cache");
+			$("#loading").show();
+			$.get("/api/historic/{{ data.symbol }}/" + time_range, function () {
+
+			}).done(function (data) {
+				historic_data = data.data.sort(function (a, b) { return a.date - b.date; })
+				mycache[time_range] = historic_data;
+				drawChart(historic_data, "{{ data.symbol }}");
+				$("#loading").hide();
+			}).fail(function () {
+				$("#loading").hide();
+				console.log("failed");
+			});
+		}
+
+	}
+
+	function addData(chart, label, data) {
+		chart.data.labels.push(label);
+		chart.data.datasets.forEach((dataset) => {
+			dataset.data.push(data);
+		});
+		chart.update();
+	}
+
+	function removeData(chart) {
+		chart.data.labels.pop();
+		chart.data.datasets.forEach((dataset) => {
+			dataset.data.pop();
+		});
+		chart.update();
+	}
+
+	function drawChart(data, symbol) {
+		// $("#stockChart").remove();
+		// $("#for-canvas").append("<canvas id='stockChart'></canvas>")
+		console.log(data);
+		var canvas = document.getElementById("stockChart");
+		let ctxL = canvas.getContext('2d');
+		let data_labels = data.map(d => d.label);
+		let data_mapped = data.map(d => d.close);
+		console.log(data_mapped[0]);
+		console.log(data_mapped[data_mapped.length - 1]);
+
+		let border = '';
+		let background = '';
+		if (data_mapped[0] > data_mapped[data_mapped.length - 1]) { // if stock is falling
+			border = 'rgb(254, 45, 0)';
+			background = 'rgba(254, 232, 232, .6)';
+		} else {
+			border = 'rgb(15, 157, 88)';
+			background = 'rgba(232, 254, 235, .6)';
+		}
+		// ctxL.clearRect(0, 0, canvas.width, canvas.height);
+		if (myLineChart != null) {
+			myLineChart.data.labels = data_labels;
+			myLineChart.data.datasets[0].data = data_mapped;
+			myLineChart.data.datasets[0].borderColor = border;
+			myLineChart.data.datasets[0].pointBackgroundColor = border;
+			// myLineChart.data.datasets[0].pointHoverBackgroundColor = border;
+			// myLineChart.data.datasets[0].pointHoverBorderColor = border;
+			myLineChart.data.datasets[0].backgroundColor = background;
+			myLineChart.update();
+		} else {
+			myLineChart = new Chart(ctxL, {
 				type: 'line',
 				data: {
-					labels: historic_data.map(d => d.label),
+					labels: data_labels,
 					datasets: [
 						{
-							label: "{{ data.symbol }}",
-							data: historic_data.map(d => d.close),
-							backgroundColor: [
-								'rgba(105, 0, 132, .2)',
-							],
+							label: symbol,
+							data: data_mapped,
+							backgroundColor: background,
+							//  [
+							// 'rgba(105, 0, 132, .2)',
+							// ],
 							borderColor: [
-								'rgba(200, 99, 132, .7)',
+								// 'rgba(200, 99, 132, .7)',
+								border
 							],
-							borderWidth: 2
+							borderWidth: 2,
+							pointBorderColor: 'rgba(0, 0, 0, 0)',
+							pointBackgroundColor: border,
+							// pointHoverBackgroundColor: border,
+							// pointHoverBorderColor: border,
 						}
 					]
 				},
+
 				options: {
-					responsive: true
+					showAllTooltips: true,
+					// hover: {
+					// 	intersect: false,
+					// },
+					tooltips: {
+						mode: 'x-axis' //always show tooltip
+					},
+					legend: {
+						display: false,
+					},
+					responsive: true,
+					scales: {
+						xAxes: [{
+							gridLines: {
+								display: false
+							},
+							ticks: {
+								autoSkip: true,
+								maxTicksLimit: 7,
+							}
+						}],
+					},
+
+					plugins: {
+						zoom: {
+							// Container for pan options
+							pan: {
+								// Boolean to enable panning
+								enabled: true,
+
+								// Panning directions. Remove the appropriate direction to disable 
+								// Eg. 'y' would only allow panning in the y direction
+								mode: 'xy'
+							},
+
+							// Container for zoom options
+							zoom: {
+								// Boolean to enable zooming
+								enabled: true,
+
+								// Zooming directions. Remove the appropriate direction to disable 
+								// Eg. 'y' would only allow zooming in the y direction
+								mode: 'xy',
+							}
+						},
+
+					}
 				}
 			});
-		});
-	});
+			$("#pills-tab").css({ visibility: 'visible' });
+		}
+
+	}
 </script>
 {% endblock %}

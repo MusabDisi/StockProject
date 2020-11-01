@@ -1,2 +1,6 @@
+*pyc
+myapp/.idea/*
+db.sqlite3
 .vscode/*
-*.pyc
+/myapp/migrations/0007_auto_20201014_0907.py
+/myapp/migrations/0018_merge_20201028_1546.py
