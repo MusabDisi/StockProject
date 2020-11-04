@@ -14,6 +14,7 @@
 				style="width: 100px;">Notify Me</button>
 			<button id="fav-me-btn" type="button" class="btn btn-outline-warning  mt-2 fa  {% if is_favorite%}fa-star{% endif %}" style="width: 100px;">  favorite</button>
 			{%include 'popup_modal/popup_modal.html'%}
+			
 		</div>
 	{% endif %}
 
@@ -172,6 +173,7 @@
 		});
 		$("#submit-btn").click(submitModal);
 		initCompare();
+		$('#test').toast('show')
 	});
 
 	function openModal() {
