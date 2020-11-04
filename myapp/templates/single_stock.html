@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{%include 'popup_modal/notif_toast.html'%}
 <div class="row align-items-center pr-3">
 	<div class="col-9 col-md-9 text-left">
 		<h2 class="display-4">
@@ -172,12 +173,12 @@
 			$("#high-row").toggleClass('disabled_row');
 		});
 		$("#submit-btn").click(submitModal);
+		$('.toast').toast({delay:2000});
 		initCompare();
-		$('#test').toast('show')
 	});
 
 	function openModal() {
-
+		$("body").css({overflow: 'hidden'});
 		// high low 
 		let high = "{{ data.high }}";
 		let low = "{{ data.low }}";
@@ -202,7 +203,7 @@
 				let low2 = "{{ is_favorite }}";
 				console.log(`the method is ${method}  value ${low2}`)
         $.ajax({
-            url: '{% url 'edit_fav_stock' %}',
+            url: "{% url 'edit_fav_stock' %}",
             headers: { "X-CSRFToken": '{{csrf_token}}' },
             method: method,
             data: {
@@ -214,6 +215,7 @@
 	}
 
 	function closeModal() {
+		$("body").css({overflow: 'visible'});
 		$("#notifications-modal").css({ display: 'none' });
 	}
 
@@ -295,6 +297,8 @@
 			include_this_week: include_this_weekVal
 		}, function () {
 			console.log("tracking submited successfully");
+			$("#toast-message").text("Notifications was added successfully");
+			$("#notif-toast").toast('show');
 		})
 			.fail(function () {
 				console.log("tracking modal submission error");
@@ -305,8 +309,10 @@
 		$.post("/notification/add/", {
 			csrfmiddlewaretoken: CSRFtoken, operator: operatorVal,
 			operand: operandVal, value: val, company_symbol: symbol
-		}, function () {
+		}, function (e) {
 			console.log("submited successfully");
+			$("#toast-message").text("Notifications was added successfully");
+			$("#notif-toast").toast('show');
 		}).fail(function (e) {
 			console.log("modal submission error");
 		})
@@ -318,6 +324,8 @@
 			value: val, company_symbol: symbol
 		}, function () {
 			console.log("submited successfully");
+			$("#toast-message").text("Notifications was added successfully");
+			$("#notif-toast").toast('show');
 		})
 			.fail(function (e) {
 				console.log("modal submission error");
