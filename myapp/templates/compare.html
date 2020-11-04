@@ -21,8 +21,9 @@
 		</div>
 	</div>
 	<button id="addStock" disabled class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-		Add stock</button>
-	<div id="chips_wrapper"> </div>
+		Add stock
+	</button>
+	<div id="chips_wrapper"></div>
 </div>
 
 
@@ -97,6 +98,7 @@
 		width: 100%;
 		height: 300px;
 	}
+
 </style>
 
 <script>
@@ -115,7 +117,7 @@
 		}
 
 		requestData('1M');
-		$("ul li a").on("click", function () {
+		$(".timeline ul li a").on("click", function () {
 			requestData(this.innerText);
 		});
 

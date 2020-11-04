@@ -1,51 +1,62 @@
 <!-- The Modal -->
 <div id="notifications-modal" class="modal">
 
-    <!-- Modal content -->
-    <div class="modal-content">
-        <!-- <div class="row justify-content-end pr-4">
-            <span class="close">&times;</span>
-        </div> -->
+    <div class="modal-dialog modal-dialog-centered">
+        <!-- Modal content -->
+        <div class="modal-content">
 
-        <div class="row">
-            <div class="col-12">
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#high-low-notif">Value Change</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#tracking-notif">Track Stock</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#analyst-notif">Analyst Rate</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="tab-content">
+            <!-- MODAL BODY -->
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
 
-            <div class="tab-pane container active" id="high-low-notif" >
-                {% include 'popup_modal/high_low_notif.html'%}
-            </div>
+                        <!-- TABS NAVIGATION -->
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#high-low-notif">Value Change</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#tracking-notif">Track Stock</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#analyst-notif">Analyst Rate</a>
+                            </li>
+                        </ul>
 
-            <div class="tab-pane container fade" id="tracking-notif">
-                {% include 'popup_modal/tracking_notif.html'%}
-            </div>
-
-            <div class="tab-pane container fade" id="analyst-notif">
-                {% include 'popup_modal/analyst_notif.html'%}
-            </div>
-            
-            <div class="row justify-content-center pt-4">
-
-                <div class="col-6 align-self-center">
-                    <button id="cancel-btn" type="button" class="btn btn-danger w-100 mt-2">Cancel</button>
+                    </div>
                 </div>
-                <div class="col-6 align-self-center">
-                    <button id="submit-btn" type="button" class="btn btn-primary w-100 mt-2">Submit</button>
+
+                <!-- TAB CONTENT (PAGES) -->
+                <div class="tab-content">
+                    <div class="tab-pane container active" id="high-low-notif">
+                        {% include 'popup_modal/high_low_notif.html'%}
+                    </div>
+
+                    <div class="tab-pane container fade" id="tracking-notif">
+                        {% include 'popup_modal/tracking_notif.html'%}
+                    </div>
+
+                    <div class="tab-pane container fade" id="analyst-notif">
+                        {% include 'popup_modal/analyst_notif.html'%}
+                    </div>
                 </div>
             </div>
+
+            <!-- MODAL FOOTER -->
+            <div class="modal-footer">
+                <div class="container-fluid">
+                    <div class="row justify-content-center">
+                        <div class="col-6 align-self-center">
+                            <button id="cancel-btn" type="button" class="btn btn-danger w-100 mt-2">Cancel</button>
+                        </div>
+                        <div class="col-6 align-self-center">
+                            <button id="submit-btn" type="button" class="btn btn-primary w-100 mt-2">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
     </div>
 </div>

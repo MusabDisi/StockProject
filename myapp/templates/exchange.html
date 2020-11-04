@@ -8,13 +8,12 @@
     <div class="row justify-content-md-center">
         <div class="table-responsive col-md-6">
             <div> <p>Stocks to Sell</p></div>
-            {% comment %} add to sell with search {% endcomment %}
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
-                <label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
+                <label class="mdl-button mdl-js-button mdl-button--icon" for="buySearchFeild">
                     <i class="material-icons" id="searchBuyIcon">search</i>
                 </label>
                 <div class="mdl-textfield__expandable-holder">
-                    <input class="mdl-textfield__input" type="text" id="searchFeild" placeholder="Search">
+                    <input class="mdl-textfield__input" type="text" id="buySearchFeild" placeholder="Search">
                     <label class="mdl-textfield__label"></label>
                 </div>
             </div>
@@ -24,25 +23,24 @@
             </div>
 
         </div>
-        {% comment %} This end {% endcomment %}
         <div class="table-responsive col-md-6">
             <div> <p>Stocks to Sell</p></div>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+                <label class="mdl-button mdl-js-button mdl-button--icon" for="sellSearchFeild">
+                    <i class="material-icons" id="searchSellIcon">search</i>
+                </label>
+                <div class="mdl-textfield__expandable-holder">
+                    <input class="mdl-textfield__input" type="text" id="sellSearchFeild" placeholder="Search">
+                    <label class="mdl-textfield__label"></label>
+                </div>
+            </div>
 
-            <table class="table table-hover data-table ">
-                <tr>
-                    <th>Symbol</th>
-                    <th>Price</th>
-                    <th>Number</th>
-                </tr>
-                {% for user_stock in user_stocks %}
-                    <tr onclick="getColumnValue('sell', '{{ user_stock.stock.symbol }}')" >
-                        <td>{{ user_stock.stock.symbol }}</td>
-                        <td>{{ user_stock.stock.price}}</td>
-                        <td>{{ user_stock.stock_number}}</td>
+            <div class=" sellindex">
+                <div id="selltable" class="ag-theme-material"></div>
+            </div>
 
-                    </tr>
-                {% endfor %}
-            </table>
+        </div>
+        {% comment %} This end {% endcomment %}
         </div>
 
 
@@ -83,13 +81,23 @@
 		height: 600px;
 		width: 100%;
 	}
+    #selltable {
+		height: 600px;
+		width: 100%;
+	}
 
-	#searchFeild {
+	#buySearchFeild{
 		padding-bottom: 8px;
 		border: none;
 	}
-
-	#searchBuyIcon {
+    #sellSearchFeild{
+		padding-bottom: 8px;
+		border: none;
+	}
+	#searchBuyIcon{
+		color: #3492eb;
+	}
+    #searchSellIcon{
 		color: #3492eb;
 	}
 </style>
@@ -137,59 +145,93 @@ const columnsDef = [
 		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
 		{ headerName: "Price", field: "price", sortable: true, cellStyle: { textAlign: 'left' } },
 		{ headerName: "Change", field: "change", sortable: true, cellStyle: cellColor }
-	];
+];
 
-	function cellColor(params) {
-		if (params.value.includes('-'))
-			return { color: 'red', textAlign: 'left' };
-		return { color: 'green', textAlign: 'left' };
-	}
+const sellColumnsDef = [
+		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Price", field: "price", sortable: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "number", field: "number", sortable: true,  cellStyle: { textAlign: 'left' } }
+];
+function cellColor(params) {
+    if (params.value.includes('-'))
+        return { color: 'red', textAlign: 'left' };
+    return { color: 'green', textAlign: 'left' };
+}
 
-	var rowData = [];
+var rowData = [];
+var sellRowData = [];
 
-	const gridOptions = {
-		columnDefs: columnsDef,
-		rowData: rowData,
-		onFirstDataRendered: makeColumnsFit,
-		rowSelection: 'single',
-		onRowClicked: (event) => {
-            getColumnValue('buy', event.data.symbol)
-		},
+const gridOptions = {
+    columnDefs: columnsDef,
+    rowData: rowData,
+    onFirstDataRendered: makeColumnsFit,
+    rowSelection: 'single',
+    onRowClicked: (event) => {
+        getColumnValue('buy', event.data.symbol)
+    },
 
-	};
+};
 
-	function makeColumnsFit(params) {
-		params.api.sizeColumnsToFit();
-	}
+const sellgridOptions = {
+    columnDefs: sellColumnsDef,
+    rowData: sellRowData,
+    onFirstDataRendered: makeColumnsFit,
+    rowSelection: 'single',
+    onRowClicked: (event) => {
+        getColumnValue('sell', event.data.symbol)
+    },
 
-	$(document).ready(function () {
-		// Get stocks from django as a json
-		var stocks = JSON.parse('{{ stocks|escapejs }}');
-		initTable(stocks);
-		initSearchBar();
-	});
+};
 
-	function initSearchBar() {
-		$('#searchFeild').keyup(function () {
-			gridOptions.api.setQuickFilter($('#searchFeild').val());
-		});
-	}
+function makeColumnsFit(params) {
+    params.api.sizeColumnsToFit();
+}
 
-	function initTable(stocks) {
-		// Add stocks
-		stocks.forEach(function (stock) {
-			fields = stock['fields'];
-			rowData.push({
-				symbol: stock['pk'],
-				price: fields['price'],
-				change: (fields['change'] < 0 ? '▼ ' : '▲ ') + fields['change'] + '%'
-			});
-		});
+$(document).ready(function () {
+    // Get stocks from django as a json
+    var stocks = JSON.parse('{{ stocks|escapejs }}');
+    var user_stocks = JSON.parse('{{ user_stocks|escapejs }}');
+    initTable(stocks, user_stocks);
+    initSearchBar();
+});
 
-		// Show the grid
-		new agGrid.Grid($('.index #buytable')[0], gridOptions);
-		gridOptions.api.sizeColumnsToFit();
-	}
+function initSearchBar() {
+    $('#buySearchFeild').keyup(function () {
+        gridOptions.api.setQuickFilter($('#buySearchFeild').val());
+    });
+    $('#sellSearchFeild').keyup(function () {
+        sellgridOptions.api.setQuickFilter($('#sellSearchFeild').val());
+    });
+}
+
+function initTable(stocks, user_stocks) {
+    // Add stocks
+    stocks.forEach(function (stock) {
+        fields = stock['fields'];
+        rowData.push({
+            symbol: stock['pk'],
+            price: fields['price'],
+            change: (fields['change'] < 0 ? '▼ ' : '▲ ') + fields['change'] + '%'
+        });
+    });
+
+    user_stocks.forEach(function (user_stock) {
+        user_stock_fields = user_stock['fields'];
+        stock_info = stocks.find(stock => stock.pk === user_stock_fields.stock)
+        sellRowData.push({
+            symbol: user_stock_fields.stock,
+            price: stock_info['fields']['price'],
+            number: user_stock_fields.stock_number
+        });
+    });
+
+
+    // Show the grid
+    new agGrid.Grid($('.index #buytable')[0], gridOptions);
+    new agGrid.Grid($('.sellindex #selltable')[0], sellgridOptions);
+    gridOptions.api.sizeColumnsToFit();
+    sellgridOptions.api.sizeColumnsToFit();
+}
 
 </script>
 {% endblock scripts %}
