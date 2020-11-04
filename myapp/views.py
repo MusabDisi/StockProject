@@ -70,15 +70,15 @@ def compare(request):
 
 
 def exchange(request):
-    if not request.user.is_authenticated:
-        return redirect(reverse('login'))
-    user = request.user
-    user_stocks = UserStock.objects.get(user_id=user.id)
-    stocks = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-    return render(request, 'exchange.html',
-                  {'user_stocks': user_stocks.stock_buyied.all(), 'stocks': serializers.serialize('json', stocks),
-                   'user_budget': user_stocks.budget})
-
+	if not request.user.is_authenticated:
+		return redirect(reverse('login'))
+	user = request.user
+	user_stocks = UserStock.objects.get(user_id=user.id)
+	stocks = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
+	return render(request, 'exchange.html', 
+                    {'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()), 
+                    'stocks': serializers.serialize('json', stocks),
+                    'user_budget': user_stocks.budget})
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
