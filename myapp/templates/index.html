@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-
+{%include 'popup_modal/notif_toast.html'%}
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
 	<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
 		<i class="material-icons" id="searchIcon">search</i>
@@ -32,8 +32,79 @@
 	}
 </style>
 
+<!-- HANDLE NOTIFICATIONS WEBSOCKET CONNECTION -->
+<script>
+	$(document).ready(function () {
+		var loc = window.location;
+		var wsStart = "ws://";
+		if (loc.protocol == "https:") {
+			wsStart = "wss://";
+		}
+		var webSocketEndpoint = wsStart + loc.host + '/pull_notifications/'  // ws : wss   // Websocket URL, Same on as mentioned in the routing.py
+		console.log(webSocketEndpoint);
+
+		var socket = new WebSocket(webSocketEndpoint) // Creating a new Web Socket Connection
+		socket.onmessage = (e)=>onMessage(e);
+		socket.onopen = (e)=> onOpen(e);
+		socket.onerror = (e)=>onError(e);
+		socket.onclose =(e)=> onClose(e);
+		$('.toast').toast({delay:5000});
+	})
+
+	// Socket On receive message Functionality
+	function onMessage(e) {
+		console.log('message', e);
+		let data = JSON.parse(e.data)
+		console.log('data: ' + data);
+		console.log('Change in ' + data['symbol']);
+		console.log('description: ' + data['description']); // Access the notification data
+		let message = { company_symbol: data['symbol'], description: data['description'], time: data['time'] };
+		let count = parseInt($("#number-of-notifs").text());
+		if (count >= 5){
+			$('#dropdown-notifs, #notifs, #dropdown-element').last().remove();
+		}
+		count++;
+		$("#number-of-notifs").text(count);
+		$("#dropdown-notifs #notifs").prepend(parseToHTML(message));
+		$("#toast-title").text('Change in ' + message['company_symbol'])
+		$("#toast-message").text(message['description']);
+		$("#notif-toast").toast('show');
+	}
+
+	// Socket Connet Functionality
+	function onOpen(e) {
+		console.log('open', e);
+	}
+
+	// Socket Error Functionality
+	function onError(e) {
+		console.log('error', e);
+
+	}
+
+	// Socket close Functionality
+	function onClose(e) {
+		console.log('closed', e);
+	}
+
+	function parseToHTML(data) {
+		return ` 
+		<div class="container p-0" id="dropdown-element"> 
+		<hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;"/>
+			<div class="media" >
+				<div class="media-body" style="width:300px;">
+				<h6 class="notification-title pl-2" style="margin-bottom: 0px;margin-top: 0px;">Change in <a id="symbol_a" href="/stock/${data['company_symbol']}">${data['company_symbol']}</a></h6>
+				<p class="notification-desc pl-2 mb-0" style="color: rgba(0,0,0,0.6); ">${data['description']}</p>
+				<div class="notification-meta pr-2">
+					<small class="timestamp ml-2" style="color: blue;">${data['time']}</small>
+				</div>
+				</div>
+			</div> 
+		</div>`
+	}	
+</script>
 <script type='text/javascript'>
-	const fav = 	JSON.parse('{{ favorite_stocks|escapejs }}').map(elm => elm.pk)
+	const fav = JSON.parse('{{ favorite_stocks|escapejs }}').map(elm => elm.pk)
 	const columnsDef = [
 		{ headerName: "Rank", field: "rank", sortable: true, cellStyle: { textAlign: 'left' } },
 		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
@@ -82,7 +153,7 @@
 		// Add data
 		data.forEach(function (stock) {
 			fields = stock['fields'];
-			fav_icon = fav.includes(stock['pk'])? '⭐️' : ''
+			fav_icon = fav.includes(stock['pk']) ? '⭐️' : ''
 			rowData.push({
 				rank: fields['top_rank'] + fav_icon,
 				symbol: stock['pk'],

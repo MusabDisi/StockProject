@@ -1,11 +1,13 @@
-<hr style="margin-top: 0.2rem;
-margin-bottom: 0.2rem;"/>
-<div class="media" >
+<div class="container p-0" id="dropdown-element">
+  <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;" />
+  <div class="media">
     <div class="media-body" style="width:300px;">
-      <h6 class="notification-title pl-2" style="margin-bottom: 0px;">Change in <a href="/stock/{{ notification.company_symbol }}">{{notification.company_symbol}}</a></h6>
+      <h6 class="notification-title pl-2 mb-0 mt-0">Change in <a id="symbol_a"
+          href="/stock/{{ notification.company_symbol }}">{{notification.company_symbol}}</a></h6>
       <p class="notification-desc pl-2 mb-0" style="color: rgba(0,0,0,0.6); ">{{notification.description}}</p>
       <div class="notification-meta pr-2">
         <small class="timestamp ml-2" style="color: blue;">{{notification.time}}</small>
       </div>
     </div>
   </div>
+</div>
