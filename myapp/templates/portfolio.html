@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="">
+    <h3> Budget {{user_budget}}
+</div>
+<div>
+    <h4>User Purchase</h4>
+</div>
+<div class="index">
+    <div id="user_stock_tb" class="ag-theme-material"></div>
+</div>
+<div>
+    <h4>User history</h4>
+</div>
+<div class="usr_history_indx">
+    <div id="user_stock_history_tb" class="ag-theme-material"></div>
+</div>
+
+
+<style>
+    .row {
+        width: 100%;
+    }
+	#user_stock_tb {
+		height: 300px;
+		width: 100%;
+	}
+    #user_stock_history_tb {
+		height: 600px;
+		width: 100%;
+	}
+    .rag-green-outer {
+        color: green !important;
+    }
+    .rag-red-outer {
+        color: red !important;
+    }
+    .rag-blue-outer' {
+        color: blue !important;
+    }
+</style>
+{% endblock %}
+{% block scripts %}
+<script>
+const columnsDef = [
+		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "number", field: "number", sortable: true, cellStyle: { textAlign: 'left' } },
+        { headerName: "Price", field: "price", sortable: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Current Price", field: "curr_price", sortable: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "If Buy", field: "if_buy", sortable: true, cellStyle: { textAlign: 'left' } }
+];
+
+const historyColumnsDef = [
+		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Price", field: "price", sortable: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "number", field: "number", sortable: true,  cellStyle: { textAlign: 'left' } },
+		{ headerName: "Buy at", field: "buy_time", sortable: true,  cellStyle: { textAlign: 'left' } },
+		{ headerName: "Sell/Buy", field: "type", sortable: true,  cellStyle: { textAlign: 'left' } },
+];
+
+var rowData = [];
+var historyRowData = [];
+
+const userStockGridOptions = {
+    columnDefs: columnsDef,
+    rowData: rowData,
+    onFirstDataRendered: makeColumnsFit,
+    rowSelection: 'single',
+    onRowClicked: (event) => {
+    },
+    rowClassRules: {
+        'rag-green-outer': (params) => params.data.if_buy > 0,
+        'rag-red-outer': (params) => params.data.if_buy < 0,
+        'rag-blue-outer': (params) => params.data.if_buy === 0
+    }
+
+};
+
+const historyStockGridOptions = {
+    columnDefs: historyColumnsDef,
+    rowData: historyRowData,
+    onFirstDataRendered: makeColumnsFit,
+    rowSelection: 'single',
+    onRowClicked: (event) => {
+    },
+    rowClassRules: {
+        'rag-green-outer': (params) => params.data.type === 'Buy',
+        'rag-red-outer': (params) => params.data.type !== 'Buy'
+    }
+
+};
+
+function makeColumnsFit(params) {
+    params.api.sizeColumnsToFit();
+}
+
+$(document).ready(function () {
+    // Get stocks from django as a json
+    var stocks = JSON.parse('{{ stocks|escapejs }}');
+    var user_stocks = JSON.parse('{{ user_stocks|escapejs }}');
+    var user_stocks_history = JSON.parse('{{ user_stocks_history|escapejs }}');
+    initTable(user_stocks, user_stocks_history, stocks);
+});
+
+function initTable(user_stocks, user_stocks_history, stocks) {
+    // Add stocks
+    user_stocks.forEach(function (user_stock) {
+        user_stock_fields = user_stock['fields'];
+        console.log(JSON.stringify(stocks))
+        let stock = stocks.find(sto => sto.pk === user_stock_fields.stock)
+        rowData.push({
+            symbol: user_stock_fields.stock,
+            price: user_stock_fields.stock_price,
+            number: user_stock_fields.stock_number,
+            curr_price: stock.fields.price,
+            if_buy: (stock.fields.price - user_stock_fields.stock_price) * user_stock_fields.stock_number
+        });
+    });
+
+    user_stocks_history.forEach(function (user_stock) {
+        user_stock_fields = user_stock['fields'];
+        historyRowData.push({
+            symbol: user_stock_fields.stock,
+            price: user_stock_fields.stock_price,
+            number: user_stock_fields.stock_number,
+            buy_time: new Date(Date.parse(user_stock_fields.stock_buy_time)).toString(),
+            type: user_stock_fields.stock_operation? 'Buy':'Sell'
+        });
+    });
+
+
+    // Show the grid
+    new agGrid.Grid($('.index #user_stock_tb')[0], userStockGridOptions);
+    new agGrid.Grid($('.usr_history_indx #user_stock_history_tb')[0], historyStockGridOptions);
+    userStockGridOptions.api.sizeColumnsToFit();
+    historyStockGridOptions.api.sizeColumnsToFit();
+}
+
+</script>
+{% endblock scripts %}

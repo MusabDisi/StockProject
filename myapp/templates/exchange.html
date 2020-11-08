@@ -220,7 +220,7 @@ function initTable(stocks, user_stocks) {
         stock_info = stocks.find(stock => stock.pk === user_stock_fields.stock)
         sellRowData.push({
             symbol: user_stock_fields.stock,
-            price: stock_info['fields']['price'],
+            price: user_stock_fields.stock_price,
             number: user_stock_fields.stock_number
         });
     });

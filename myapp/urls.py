@@ -10,6 +10,7 @@ from myapp.notif_scheduler import NotificationsScheduler
 urlpatterns = [
     path('', views.index, name='index'),
     path('exchange', views.exchange, name='exchange'),
+    path('portfolio', views.portfolio, name='portfolio'),
     path('compare', views.compare, name='compare'),
     path('stock/<str:symbol>/', views.single_stock, name='single_stock'),
     path('api/historic/<str:symbol>/<str:time_range>/', views.single_stock_historic, name='single_stock_historic'),
