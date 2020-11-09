@@ -40,7 +40,7 @@ class NotificationsScheduler:
 
     def start(self):
         print('Started running the jobs')
-        self.scheduler.add_job(self.set_active_notifications, 'interval', seconds=30, id=self.notifications_id)
+        self.scheduler.add_job(self.set_active_notifications, 'interval', hours=1, id=self.notifications_id)
         self.scheduler.add_job(self.check_tracking_model, 'interval', hours=12, id=self.stock_tracking_id)
         self.scheduler.add_job(self.check_notifications_analyst, 'interval', days=1, id=self.analyst_rec_id)
 
@@ -75,10 +75,13 @@ class NotificationsScheduler:
             return cached
         else:
             data = stock_api.get_analyst_recommendations(symbol)
-            rec = data[0]
-            rec = rec.get('ratingScaleMark')
-            cache.set(symbol + 'analystRec', rec, (30 * 60))  # cache for 30 mins
-            return rec
+            if data:
+                rec = data[0]
+                rec = rec.get('ratingScaleMark')
+                cache.set(symbol + 'analystRec', rec, (30 * 60))  # cache for 30 mins
+                return rec
+            else:
+                return 0
 
     @staticmethod
     def is_bigger(value, api_value):
@@ -207,6 +210,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=company_symbol)
                     rn.save()
                     track.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
                 else:
                     if operand == 1:
                         operand = 'High'
@@ -219,6 +223,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=company_symbol)
                     rn.save()
                     track.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
 
     def check_notifications_analyst(self):
         notifications = NotificationAnalystRec.objects.all()
@@ -238,6 +243,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
                     rn.save()
                     notification.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
                 else:
                     notification.last_checked = now()
                     notification.save()
