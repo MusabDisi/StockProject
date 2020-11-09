@@ -7,4 +7,4 @@ Here are some screenshots from the project:
  
 | Home Page | Stock Page | Compare Page | Exchange |
 |---|---|---|---|
-|1|2|3|4|
+| ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/Home.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/SingleStock.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/Compare.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/Exchange.png?raw=true) |
