@@ -80,8 +80,8 @@ def exchange(request):
 	user = request.user
 	user_stocks = UserStock.objects.get(user_id=user.id)
 	stocks = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
-	return render(request, 'exchange.html', 
-                    {'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()), 
+	return render(request, 'exchange.html',
+                    {'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
                     'stocks': serializers.serialize('json', stocks),
                     'user_budget': user_stocks.budget})
 
@@ -119,9 +119,9 @@ def portfolio(request):
     stocks = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
     user_stocks = UserStock.objects.get(user_id=user.id)
     user_stocks_history = UserStockHistory.objects.get(user_id=user.id)
-    return render(request, 'portfolio.html', 
+    return render(request, 'portfolio.html',
                     {'page_title': 'Portfolio',
-                    'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()), 
+                    'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
                     'user_stocks_history': serializers.serialize('json', user_stocks_history.stock_operation_history.all()),
                     'user_budget': user_stocks.budget,
                     'stocks': serializers.serialize('json', stocks)})
@@ -307,7 +307,6 @@ def get_company_desc(request, company_symbol):
         return JsonResponse({'summary': 'Couldn\'t find information'})
 
 
-@login_required
 def multi_stocks_historic(request, stocks, time_range='1m'):
     result = []
     stocks_list = stocks.split('-')
