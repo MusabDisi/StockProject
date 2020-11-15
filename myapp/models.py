@@ -32,15 +32,12 @@ class Company(models.Model):
     def __str__(self):
         return self.company_name
 
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
-    avatar = models.CharField(max_length=100)
-
 class StockOperation(models.Model):
-    stock = models.OneToOneField(Stock, on_delete=models.DO_NOTHING)
+    stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING)
     stock_number = models.DecimalField(default=0, max_digits=10, decimal_places=2)
-    
+    stock_buy_time = models.DateTimeField(default=now)
+    stock_price = models.FloatField(null=True)
+
 class UserStock(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     stock_buyied =  models.ManyToManyField(StockOperation)
@@ -77,3 +74,14 @@ class ReadyNotification(models.Model):
     company_symbol = models.CharField(max_length=12)
     description = models.CharField(max_length=120)
     time = models.DateTimeField(default=now)
+
+class StockOperationHistory(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING)
+    stock_number = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    stock_buy_time = models.DateTimeField(default=now)
+    stock_price = models.FloatField(null=True)
+    stock_operation = models.BooleanField(default=False)
+
+class UserStockHistory(models.Model):
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+    stock_operation_history =  models.ManyToManyField(StockOperationHistory)
