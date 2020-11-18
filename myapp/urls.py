@@ -10,6 +10,7 @@ from myapp.notifications_ajax import *
 urlpatterns = [
     path('', views.index, name='index'),
     path('exchange', views.exchange, name='exchange'),
+    path('portfolio', views.portfolio, name='portfolio'),
     path('compare', views.compare, name='compare'),
     path('stock/<str:symbol>/', views.single_stock, name='single_stock'),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),

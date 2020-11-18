@@ -1,3 +1,5 @@
+from django.http import request
+from django.core.paginator import Paginator
 from django.http import QueryDict
 from django.urls import reverse
 from django.conf import settings
@@ -38,17 +40,21 @@ def index(request):
         'favorite_stocks': serializers.serialize('json', favorite_stocks),
     })
 
-
+@login_required
 def favorite_stock(request):
     user = request.user
-    data = FavoriteStock.objects.get(user_id=user.id).stocks.order_by('top_rank').all()
+    data = []
+    try:
+        data = FavoriteStock.objects.get(user_id=user.id).stocks.order_by('top_rank').all()
+    except Exception:
+        data = []
     return render(request, 'fav_stocks.html', {'page_title': 'Favorite Stokes', 'data': data})
 
 
 def compare(request):
     return render(request, 'compare.html', {'stocks': request.GET.get('symbols')})
 
-
+@login_required
 def exchange(request):
     if not request.user.is_authenticated:
         return redirect(reverse('login'))
@@ -59,7 +65,6 @@ def exchange(request):
                   {'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
                    'stocks': serializers.serialize('json', stocks),
                    'user_budget': user_stocks.budget})
-
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
@@ -88,6 +93,19 @@ def single_stock(request, symbol):
     return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
                                                  'rec': rec, 'is_favorite': is_favorite}, )
 
+def portfolio(request):
+    if not request.user.is_authenticated:
+        return redirect(reverse('login'))
+    user = request.user
+    stocks = Stock.objects.filter(top_rank__isnull=False).order_by('top_rank')
+    user_stocks = UserStock.objects.get(user_id=user.id)
+    user_stocks_history = UserStockHistory.objects.get(user_id=user.id)
+    return render(request, 'portfolio.html',
+                    {'page_title': 'Portfolio',
+                    'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
+                    'user_stocks_history': serializers.serialize('json', user_stocks_history.stock_operation_history.all()),
+                    'user_budget': user_stocks.budget,
+                    'stocks': serializers.serialize('json', stocks)})
 
 def register(request):
     # If post -> register the user and redirect to main page
@@ -107,6 +125,8 @@ def register(request):
         user_budget = float(request.POST.get('credit')) if request.POST.get('credit') else 0
         user_stock.budget = user_budget
         user_stock.save()
+        user_stock_history = UserStockHistory.objects.create(user=newuser)
+        user_stock_history.save()
 
         if request.FILES and request.POST.get('avatar') and request.FILES['avatar']:
             avatar = request.FILES['avatar']
@@ -139,6 +159,8 @@ def buy_stock(request):
         return render(request, 'register.html', {'page_title': 'Register'})
     user = request.user
     user_stock_info = UserStock.objects.get(user_id=user.id)
+    user_stock_history = UserStockHistory.objects.get(user_id=user.id)
+
     request_body = QueryDict(request.body)
     if not request_body.get('symbol') or not request_body.get('stock_number'):
         return JsonResponse({"error": "wrong data"})
@@ -156,16 +178,27 @@ def buy_stock(request):
         user_stock = user_stock_info.stock_buyied.all().filter(
             stock_id=stock_symbol)
         if user_stock:
-            user_stock[0].stock_number = float(
-                user_stock[0].stock_number) + stock_number
+            old_stock_cost = float(user_stock[0].stock_number) * float(user_stock[0].stock_price)
+            new_stock_cost = stock_number * stock.price
+            total_stock_cost = old_stock_cost + new_stock_cost
+            total_number = float(user_stock[0].stock_number) + stock_number
+            user_stock[0].stock_number = total_number
+            user_stock[0].stock_price = total_stock_cost / total_number
             user_stock[0].save()
         else:
             new_stock = StockOperation.objects.create(
-                stock=stock, stock_number=stock_number)
+                stock=stock, stock_number=stock_number, stock_price=float(stock.price))
             new_stock.save()
             user_stock_info.stock_buyied.add(new_stock)
+
         user_stock_info.budget = float(user_stock_info.budget) - stock_cost
         user_stock_info.save()
+        # add to history
+        stock_history = StockOperationHistory.objects.create(
+                stock=stock, stock_number=stock_number, stock_price=float(stock.price), stock_operation=True)
+        stock_history.save()
+        user_stock_history.stock_operation_history.add(stock_history)
+        user_stock_history.save()
         return JsonResponse({'user_budget': user_stock_info.budget})
 
     if request.method == 'DELETE':
@@ -182,6 +215,12 @@ def buy_stock(request):
 
         user_stock_info.budget = float(user_stock_info.budget) + stock_cost
         user_stock_info.save()
+        # add to history
+        stock_history = StockOperationHistory.objects.create(
+                stock=stock, stock_number=stock_number, stock_price=float(stock.price), stock_operation=False)
+        stock_history.save()
+        user_stock_history.stock_operation_history.add(stock_history)
+        user_stock_history.save()
         return JsonResponse({'user_budget': user_stock_info.budget})
 
 
@@ -230,6 +269,57 @@ def change_password(request):
 def logout_view(request):
     logout(request)
     return redirect('index')
+
+
+
+# API for a stock's price over time
+# symbol is the requested stock's symbol ('AAPL' for Apple)
+# The response is JSON data of an array composed of "snapshot" objects (date + stock info + ...), usually one per day
+def single_stock_historic(request, symbol, time_range='1m'):
+    data = stock_api.get_stock_historic_prices(symbol, time_range=time_range)
+    return JsonResponse({'data': data})
+
+
+def get_company_desc(request, company_symbol):
+    try:
+        comp = Company.objects.get(company_symbol=company_symbol)
+        return JsonResponse({'summary': comp.company_desc})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'summary': 'Couldn\'t find information'})
+
+
+def multi_stocks_historic(request, stocks, time_range='1m'):
+    result = []
+    stocks_list = stocks.split('-')
+
+    for stock in stocks_list:
+        result.append({'name': stock, 'data': stock_api.get_stock_historic_prices(stock, time_range=time_range)})
+
+    return JsonResponse({'data': result}, content_type="application/json")
+
+
+def stocks_names_and_symbols(request):
+    data = Stock.objects.filter(top_rank__isnull=False).order_by('name')
+    result = []
+    for datum in data:
+        result.append('{} - {}'.format(datum.symbol, datum.name))
+    return JsonResponse({'data': result}, content_type="application/json")
+
+
+def add_notification(request):
+    print('received')
+    if request.method == "POST":
+        print('posting', request.POST)
+        if request.user.is_authenticated:
+            notification = Notification(user=request.user, operator=request.POST.get('operator').strip()
+                                        , operand=request.POST.get('operand').strip()
+                                        , value=request.POST.get('value').strip()
+                                        , company_symbol=request.POST.get('company_symbol').strip())
+
+            notification.save()
+
+    return HttpResponse(status=HTTP_204_NO_CONTENT)
 
 
 @login_required
