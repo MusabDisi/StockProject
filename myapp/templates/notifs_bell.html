@@ -1,4 +1,4 @@
-<li class="nav-item dropdown">
+<li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" id="notifications" data-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">
         <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-bell-fill" fill="currentColor"
@@ -6,19 +6,31 @@
             <path
                 d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
         </svg>
-        {% if number_of_notifs%}
-        <span class="badge">{{number_of_notifs}}</span></a>
+
+        <span id="number-of-notifs" class="badge">{{number_of_notifs}}</span></a>
+
+    <div id="dropdown-notifs" class="dropdown-menu dropdown-menu-right dropdown-info p-2"
+        aria-labelledby="notifications">
+        <h6 class="pl-2" style="margin-top: 0; margin-bottom: 0;">Recent Notifications</h6>
+        <div id='notifs'>
+            {% if number_of_notifs == 0 %}
+                <div class="container p-0" id="dropdown-element" style="display: none;">
+                    {% include 'notification.html'%}
+                </div>
+            {%else%}
+                {%for notification in notifications%}
+                    <div class="container p-0" id="dropdown-element">
+                        {% include 'notification.html'%}
+                    </div>
+                {%endfor%}
+        {%endif%}
+    </div>
+    <hr style="margin-top: 0.2rem;margin-bottom: 0.2rem;" />
+
+    {% if number_of_notifs > 5 %}
+    <a id="show-all" class="dropdown-item" href="{% url 'my_notifications' %}" style="color: blue; text-align: center;">( Show All)</a>
+    {%else%}
+    <a id="show-all" class="dropdown-item" href="{% url 'my_notifications' %}" style="color: blue; text-align: center; display: none">( Show All)</a>
     {%endif%}
-    <div class="dropdown-menu dropdown-menu-right dropdown-info" aria-labelledby="notifications">
-        <h6 class="pl-2">RecentNotifications</h6>
-        {%for notification in notifications%}
-        {% include 'notification.html'%}
-        {%endfor%}
-        <hr style="margin-top: 0.2rem;
-                                margin-bottom: 0.2rem;" />
-
-        <a class="dropdown-item" href="{% url 'my_notifications' %}" style="color: blue; text-align: center;">( Show All
-            )</a>
-
     </div>
 </li>

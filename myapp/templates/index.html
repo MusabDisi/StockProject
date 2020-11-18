@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-
+{%include 'popup_modal/notif_toast.html'%}
 <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
 	<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
 		<i class="material-icons" id="searchIcon">search</i>
@@ -32,8 +32,82 @@
 	}
 </style>
 
+<!-- HANDLE NOTIFICATIONS WEBSOCKET CONNECTION -->
+<script>
+	$(document).ready(function () {
+		var loc = window.location;
+		var wsStart = "ws://";
+		if (loc.protocol == "https:") {
+			wsStart = "wss://";
+		}
+		var webSocketEndpoint = wsStart + loc.host + '/pull_notifications/'  // ws : wss   // Websocket URL, Same on as mentioned in the routing.py
+		console.log(webSocketEndpoint);
+
+		var socket = new WebSocket(webSocketEndpoint) // Creating a new Web Socket Connection
+		socket.onmessage = (e)=>onMessage(e);
+		socket.onopen = (e)=> onOpen(e);
+		socket.onerror = (e)=>onError(e);
+		socket.onclose =(e)=> onClose(e);
+		$('.toast').toast({delay:5000});
+	})	
+
+	// Socket On receive message Functionality
+	function onMessage(e) {
+
+		let data = JSON.parse(e.data)
+		let message = { company_symbol: data['symbol'], description: data['description'], time: data['time'] };
+		let count = parseInt($("#number-of-notifs").text()); // get number of current notifs
+
+		//clone element to resuse later
+		$('#dropdown-notifs #notifs #dropdown-element').first().clone().prependTo($('#dropdown-notifs #notifs'));
+
+		if (count >= 5){
+			// remove last element
+			$('#dropdown-notifs #notifs #dropdown-element').last().remove();
+		}
+
+		// update clone
+		$('#dropdown-notifs #notifs #dropdown-element:first-child').css({display:'inline'});
+		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-title a').attr('href','/stock/'+message['company_symbol']);
+		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-title a').text(message['company_symbol']);
+		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-desc').text(message['description'])
+		$('#dropdown-notifs #notifs #dropdown-element:first-child .timestamp').text(message['time'])
+
+		//update count
+		count++;
+		$("#number-of-notifs").text(count);
+		if(count > 5){
+			$('#dropdown-notifs #show-all').css({display:'block'});
+		}
+
+		// show toast
+		$("#toast-title").text("Change in " + message['company_symbol']);
+		$("#toast-message").text(message['description']);
+		$("#notif-toast").toast('show');
+
+		
+	}
+
+	// Socket Connet Functionality
+	function onOpen(e) {
+		console.log('open', e);
+	}
+
+	// Socket Error Functionality
+	function onError(e) {
+		console.log('error', e);
+
+	}
+
+	// Socket close Functionality
+	function onClose(e) {
+		console.log('closed', e);
+	}
+
+
+</script>
 <script type='text/javascript'>
-	const fav = 	JSON.parse('{{ favorite_stocks|escapejs }}').map(elm => elm.pk)
+	const fav = JSON.parse('{{ favorite_stocks|escapejs }}').map(elm => elm.pk)
 	const columnsDef = [
 		{ headerName: "Rank", field: "rank", sortable: true, cellStyle: { textAlign: 'left' } },
 		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
@@ -82,7 +156,7 @@
 		// Add data
 		data.forEach(function (stock) {
 			fields = stock['fields'];
-			fav_icon = fav.includes(stock['pk'])? '⭐️' : ''
+			fav_icon = fav.includes(stock['pk']) ? '⭐️' : ''
 			rowData.push({
 				rank: fields['top_rank'] + fav_icon,
 				symbol: stock['pk'],

@@ -6,13 +6,31 @@ from myapp import stock_api
 import datetime
 from dateutil.relativedelta import relativedelta, FR
 from django.core.cache import cache
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 # When we already have a job running what to do? we can use max_instances keyword
-# TODO: Caching system
-# TODO: Event listener for exceptions
 # this class uses apsscheduler
 # further info can be found at https://apscheduler.readthedocs.io/en/stable/userguide.html
+def send_to_socket(user, company_symbol, description, time):
+    channel_layer = get_channel_layer()
+    data_to_socket = {
+        "symbol": company_symbol,
+        "description": description,
+        "time": time,
+    }
+
+    # Trigger message sent to group
+    async_to_sync(channel_layer.group_send)(
+        str(user.pk),  # Group Name, Should always be string
+        {
+            "type": "notify",  # custom function in consumer.py
+            "data": data_to_socket,
+        },  # message
+    )
+
+
 class NotificationsScheduler:
     def __init__(self):
         self.scheduler = BackgroundScheduler()
@@ -57,11 +75,13 @@ class NotificationsScheduler:
             return cached
         else:
             data = stock_api.get_analyst_recommendations(symbol)
-            rec = data[0]
-            rec = rec.get('ratingScaleMark')
-            cache.set(symbol + 'analystRec', rec, (30 * 60))  # cache for 30 mins
-            return rec
-
+            if data:
+                rec = data[0]
+                rec = rec.get('ratingScaleMark')
+                cache.set(symbol + 'analystRec', rec, (30 * 60))  # cache for 30 mins
+                return rec
+            else:
+                return 0
 
     @staticmethod
     def is_bigger(value, api_value):
@@ -82,7 +102,7 @@ class NotificationsScheduler:
         operators = {'bigger': self.is_bigger, 'lower': self.is_lower, 'equal': self.is_equal}
         for notification in notifications:
             time_now = now()
-            should_check = (((time_now - notification.last_checked).seconds // 60 % 60) >= 0)  # check if 10 mins passed
+            should_check = (((time_now - notification.last_checked).seconds // 60 % 60) >= 0)  # check if 0 mins passed
             if should_check:
                 user = notification.user
                 key = notification.operand
@@ -100,6 +120,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
                     rn.save()
                     notification.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
                 else:
                     notification.last_checked = now()
                     notification.save()
@@ -189,6 +210,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=company_symbol)
                     rn.save()
                     track.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
                 else:
                     if operand == 1:
                         operand = 'High'
@@ -201,6 +223,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=company_symbol)
                     rn.save()
                     track.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
 
     def check_notifications_analyst(self):
         notifications = NotificationAnalystRec.objects.all()
@@ -220,12 +243,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
                     rn.save()
                     notification.delete()
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
                 else:
                     notification.last_checked = now()
                     notification.save()
-    # def job_listener(self, event):
-    #     if event.exception:
-    #         print('The job crashed :(')
-    #         raise event.exception
-    #     else:
-    #         print('The job worked :)')
