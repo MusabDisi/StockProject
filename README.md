@@ -9,6 +9,12 @@ Here are some screenshots from the project:
 |---|---|---|---|
 | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/Home.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/SingleStock.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/Compare.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/origin/omar/git_resources/Exchange.png?raw=true) |
 
+For subscribers:
+
+| Notifications | Notifications Panel | Add to favorite | favorite |
+|---|---|---|---|
+| ![](https://raw.githubusercontent.com/MusabDisi/StockProject/master/git_resources/notifications_modal.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/master/git_resources/notifications.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/master/git_resources/fav+notif.png?raw=true) | ![](https://raw.githubusercontent.com/MusabDisi/StockProject/master/git_resources/favorite.png?raw=true) |
+
 
 #### 🏗 How to build it yourself
 After you clone the repo, you need to navigation into the project folder and run the command:
