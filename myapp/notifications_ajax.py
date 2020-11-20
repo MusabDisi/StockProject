@@ -46,7 +46,6 @@ def get_company_desc(request, company_symbol):
         return JsonResponse({'summary': 'Couldn\'t find information'})
 
 
-@login_required
 def multi_stocks_historic(request, stocks, time_range='1m'):
     result = []
     stocks_list = stocks.split('-')
