@@ -110,6 +110,7 @@
 
 	$(document).ready(function () {
 		if (stocksRaw.length == 0) {
+			initSearch();
 			showEmptyState();
 			return;
 		}
