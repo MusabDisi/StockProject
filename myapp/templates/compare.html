@@ -109,9 +109,8 @@
 	var todayPriceChart = null;
 
 	$(document).ready(function () {
-		initSearch();
-
 		if (stocksRaw.length == 0) {
+			initSearch();
 			showEmptyState();
 			return;
 		}
@@ -217,11 +216,11 @@
 			reflectDataOnCharts(data.data);
 			$('#progress').css('visibility', 'hidden');
 			$('.timeline').css('visibility', 'visible');
+			initSearch();
 		}).fail(function () {
 			console.log('err');
 		});
 	}
-
 
 	function reflectDataOnCharts(data) {
 		// Build timeline chart
