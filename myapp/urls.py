@@ -9,6 +9,7 @@ from myapp.notifications_ajax import *
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('crypto', views.crypto, name='crypto'),
     path('exchange', views.exchange, name='exchange'),
     path('portfolio', views.portfolio, name='portfolio'),
     path('compare', views.compare, name='compare'),

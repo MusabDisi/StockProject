@@ -40,6 +40,10 @@ def index(request):
         'favorite_stocks': serializers.serialize('json', favorite_stocks),
     })
 
+
+def crypto(request):
+    return render(request, 'crypto.html')
+
 @login_required
 def favorite_stock(request):
     user = request.user
