@@ -61,14 +61,6 @@ def _get_top_stocks():
                          additional_parameters={'displayPercent': 'true', 'listLimit': '100000'})
 
 
-# def _get_all_stocks():
-#     return _request_data('/stable/stock/market/list/mostactive',
-#                          filter='symbol,companyName,latestVolume,change,changePercent,primaryExchange,marketCap,'
-#                                 'latestPrice,calculationPrice',
-#                          additional_parameters={'displayPercent': 'true', 'listLimit': '40'})
-#
-
-
 def get_stock_info(symbol):
     # 'symbol,companyName,marketCap,totalCash,primaryExchange,latestPrice,latestSource,change,changePercent'
     return _request_data_sandbox('/stable/stock/{symbol}/quote'.format(symbol=symbol),
@@ -82,6 +74,10 @@ def get_stock_historic_prices(symbol, time_range='1m', filter=''):
     return _request_data_sandbox('/stable/stock/{symbol}/chart/{time_range}'
                                  .format(symbol=symbol, time_range=time_range),
                                  filter=filter)
+
+
+def get_top_crypto():
+    return _request_data_sandbox('/stable/ref-data/crypto/symbols')
 
 
 def get_stock_info_notification(symbol, operand):
