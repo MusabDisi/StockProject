@@ -1,15 +1,15 @@
-from django.http import request
-from django.core.paginator import Paginator
-from django.http import QueryDict
-from django.urls import reverse
+import pathlib
+
 from django.conf import settings
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.files.storage import FileSystemStorage
-import pathlib
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.http import QueryDict
 from django.shortcuts import render, redirect, HttpResponse
+from django.urls import reverse
+
 from myapp import stock_api
 from myapp.models import *
 
@@ -45,6 +45,10 @@ def crypto(request):
     data = CryptoCurrency.objects.filter(rank__isnull=False).order_by('rank')
     data_json = serializers.serialize('json', data)
     return render(request, 'crypto.html', {'data': data_json})
+
+
+def crypto_details(request, symbol='BTCUSD'):
+    return render(request, 'crypto_details.html')
 
 
 @login_required
