@@ -54,8 +54,15 @@
 
 	$(document).ready(function () {
 		const cryptos = JSON.parse('{{data | escapejs}}');
-		initTable(cryptos)
+		initTable(cryptos);
+		initSearchBar();
 	});
+
+	function initSearchBar() {
+		$('#searchFeild').keyup(function () {
+			gridOptions.api.setQuickFilter($('#searchFeild').val());
+		});
+	}
 
 	function initTable(cryptos) {
 		// Add data
