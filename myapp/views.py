@@ -1,4 +1,5 @@
 import pathlib
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth import logout
@@ -9,6 +10,7 @@ from django.http import JsonResponse
 from django.http import QueryDict
 from django.shortcuts import render, redirect, HttpResponse
 from django.urls import reverse
+from django.utils.timezone import make_aware
 
 from myapp import stock_api
 from myapp.models import *
@@ -48,7 +50,14 @@ def crypto(request):
 
 
 def crypto_details(request, symbol='BTCUSD'):
-    return render(request, 'crypto_details.html')
+    data = stock_api.crypto_details(symbol)
+    return render(request, 'crypto_details.html', {
+        'latestPrice': data['latestPrice'],
+        'symbol': data['symbol'],
+        'source': data['latestSource'],
+        'latestUpdate': make_aware(datetime.fromtimestamp(data['latestUpdate'] / 1000)),
+        'latestVolume': data['latestVolume']
+    })
 
 
 @login_required

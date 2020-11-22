@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/multi_historic/<str:stocks>/<str:time_range>/', multi_stocks_historic,
          name='multi_stocks_historic'),
     path('api/stocks_names_and_symbols/', stocks_names_and_symbols, name='stocks_names_and_symbols'),
+    path('api/crypto_historic/<str:symbol>/', stock_api.crypto_historic, name='crypto_historic'),
     path('company/get_description/<str:company_symbol>', get_company_desc, name="get_company_description"),
     path('tracking/add/', add_tracking, name='add_tracking'),
     path('notification/add/', add_notification, name='notification'),  # add notification to db
