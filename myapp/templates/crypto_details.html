@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+
+<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+    <thead>
+        <tr>
+            <th class="mdl-data-table__cell--non-numeric"><i class="material-icons sml">done_all</i></th>
+            <th>Feature</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <!-- Price -->
+            <td class="mdl-data-table__cell--non-numeric"> <i class="material-icons sml">attach_money</i> </td>
+            <td>Latest price</td>
+            <td style="color:green">${{latestPrice}}</td>
+        </tr>
+
+        <!-- Source -->
+        <tr>
+            <td class="mdl-data-table__cell--non-numeric"> <i class="material-icons sml">sync</i> </td>
+            <td>Source</td>
+            <td>{{source}}</td>
+        </tr>
+
+        <!-- Last update -->
+        <tr>
+            <td class="mdl-data-table__cell--non-numeric"> <i class="material-icons sml">access_time</i> </td>
+            <td>Last update</td>
+            <td>{{latestUpdate}}</td>
+        </tr>
+
+        <!-- Last volume -->
+        <tr>
+            <td class="mdl-data-table__cell--non-numeric"> <i class="material-icons sml">import_export</i> </td>
+            <td>Last volume</td>
+            <td>{{latestVolume}}</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="chart">
+    <canvas id="chart"></canvas>
+</div>
+<h1></h1>
+<style>
+    p {
+        font-size: 22px;
+        color: black;
+        display: inline-block;
+    }
+
+    .material-icons.sml {
+        font-size: 19px;
+        color: #3985c0;
+    }
+
+    table {
+        display: inline-block;
+    }
+
+    th {
+        text-align: center;
+    }
+
+    .chart {
+        display: inline-block;
+        width: 50%;
+        height: 250px;
+        margin: 8px;
+    }
+</style>
+
+
+
+<script>
+
+    $(document).ready(function () {
+
+        $.get("/api/crypto_historic/{{symbol}}", function () {
+        }).done(function (data) {
+            reflectDataOnCharts(data);
+        }).fail(function () {
+            console.log('err');
+        });
+
+    });
+
+    function reflectDataOnCharts(data) {
+        timelineChart = new Chart(
+            $('#chart')[0].getContext('2d'), {
+            type: 'line', options: { legend: { display: false, }, },
+            data: {
+                labels: data.map(d => d.timestamp),
+                datasets: [{
+                    label: 'Price',
+                    data: data.map(d => d.price),
+                    backgroundColor: '#4a4f54',
+                    borderColor: 'orange',
+                    borderWidth: 1
+                }]
+            },
+        });
+    }
+
+
+</script>
+
+{% endblock %}

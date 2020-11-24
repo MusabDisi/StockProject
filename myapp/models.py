@@ -1,7 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.timezone import now
-import datetime
 
 
 # Create your models here.
@@ -15,13 +14,23 @@ class Stock(models.Model):
     market_cap = models.FloatField(null=True)
     primary_exchange = models.CharField(null=True, max_length=32)
 
+
+class CryptoCurrency(models.Model):
+    rank = models.IntegerField(null=True)
+    symbol = models.CharField(max_length=12, primary_key=True)
+    name = models.CharField(max_length=64)
+    currency = models.CharField(max_length=64)
+
+
 class UserProfile(models.Model):
-    user   = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     avatar = models.CharField(max_length=100)
 
+
 class FavoriteStock(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	stocks = models.ManyToManyField(Stock)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    stocks = models.ManyToManyField(Stock)
+
 
 class Company(models.Model):
     sector_name = models.CharField(max_length=64)
@@ -32,16 +41,19 @@ class Company(models.Model):
     def __str__(self):
         return self.company_name
 
+
 class StockOperation(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING)
     stock_number = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     stock_buy_time = models.DateTimeField(default=now)
     stock_price = models.FloatField(null=True)
 
+
 class UserStock(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
-    stock_buyied =  models.ManyToManyField(StockOperation)
+    stock_buyied = models.ManyToManyField(StockOperation)
     budget = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+
 
 class TrackStock(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -75,6 +87,7 @@ class ReadyNotification(models.Model):
     description = models.CharField(max_length=120)
     time = models.DateTimeField(default=now)
 
+
 class StockOperationHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.DO_NOTHING)
     stock_number = models.DecimalField(default=0, max_digits=10, decimal_places=2)
@@ -82,6 +95,7 @@ class StockOperationHistory(models.Model):
     stock_price = models.FloatField(null=True)
     stock_operation = models.BooleanField(default=False)
 
+
 class UserStockHistory(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
-    stock_operation_history =  models.ManyToManyField(StockOperationHistory)
+    stock_operation_history = models.ManyToManyField(StockOperationHistory)

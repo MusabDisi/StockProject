@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+	<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
+		<i class="material-icons" id="searchIcon">search</i>
+	</label>
+	<div class="mdl-textfield__expandable-holder">
+		<input class="mdl-textfield__input" type="text" id="searchFeild" placeholder="Search">
+		<label class="mdl-textfield__label"></label>
+	</div>
+</div>
+
+<div class=" index">
+	<div id="table" class="ag-theme-material"></div>
+</div>
+
+
+<style>
+	#table {
+		height: 600px;
+		width: 100%;
+	}
+
+	#searchFeild {
+		padding-bottom: 8px;
+		border: none;
+	}
+
+	#searchIcon {
+		color: #3492eb;
+	}
+</style>
+
+<script>
+
+	const columnsDef = [
+		{ headerName: "Rank", field: "rank", sortable: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Symbol", field: "symbol", sortable: true, filter: true, cellStyle: { textAlign: 'left' } },
+		{ headerName: "Name", field: "name", sortable: true, filter: true, cellStyle: { textAlign: 'left', width: '300px' }, resizable: true },
+		{ headerName: "Currency", field: "currency", sortable: true, cellStyle: { textAlign: 'left' } }
+	];
+
+	var rowData = [];
+
+	const gridOptions = {
+		columnDefs: columnsDef,
+		rowData: rowData,
+		onFirstDataRendered: (params) => params.api.sizeColumnsToFit(),
+		rowSelection: 'single',
+		onRowClicked: function (event) {
+			window.location.href = 'crypto_details/' + event.data.symbol;
+		},
+	};
+
+	$(document).ready(function () {
+		const cryptos = JSON.parse('{{data | escapejs}}');
+		initTable(cryptos);
+		initSearchBar();
+	});
+
+	function initSearchBar() {
+		$('#searchFeild').keyup(function () {
+			gridOptions.api.setQuickFilter($('#searchFeild').val());
+		});
+	}
+
+	function initTable(cryptos) {
+		// Add data
+		cryptos.forEach(function (crypto) {
+			fields = crypto['fields'];
+			rowData.push({
+				rank: fields['rank'],
+				symbol: crypto.pk,
+				name: fields['name'],
+				currency: fields['currency']
+			});
+		});
+
+		// Show the grid
+		new agGrid.Grid($('.index #table')[0], gridOptions);
+		gridOptions.api.sizeColumnsToFit();
+	}
+
+</script>
+
+{% endblock %}

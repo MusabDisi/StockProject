@@ -1,14 +1,17 @@
-from django.urls import path
-from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from . import views, views_ajax
+from django.urls import path
+
 from myapp.notif_scheduler import NotificationsScheduler
 from myapp.notifications_ajax import *
+from . import views, views_ajax
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('crypto', views.crypto, name='crypto'),
+    path('crypto_details/<str:symbol>', views.crypto_details, name='crypto_details'),
     path('exchange', views.exchange, name='exchange'),
     path('portfolio', views.portfolio, name='portfolio'),
     path('compare', views.compare, name='compare'),
@@ -21,7 +24,6 @@ urlpatterns = [
     path('accounts/favourite_stock/', views.favorite_stock, name='favorite_stock'),
     path('favstock', views_ajax.fav_stock, name='edit_fav_stock'),
     path('stocks/buy/', views.buy_stock, name='buy_stocks'),
-
 
     # notifications
     path('accounts/my_notifications/', views.my_notifications, name='my_notifications'),
@@ -37,6 +39,7 @@ urlpatterns = [
     path('api/multi_historic/<str:stocks>/<str:time_range>/', multi_stocks_historic,
          name='multi_stocks_historic'),
     path('api/stocks_names_and_symbols/', stocks_names_and_symbols, name='stocks_names_and_symbols'),
+    path('api/crypto_historic/<str:symbol>/', stock_api.crypto_historic, name='crypto_historic'),
     path('company/get_description/<str:company_symbol>', get_company_desc, name="get_company_description"),
     path('tracking/add/', add_tracking, name='add_tracking'),
     path('notification/add/', add_notification, name='notification'),  # add notification to db
