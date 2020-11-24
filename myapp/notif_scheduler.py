@@ -40,7 +40,7 @@ class NotificationsScheduler:
 
     def start(self):
         print('Started running the jobs')
-        self.scheduler.add_job(self.set_active_notifications, 'interval', hours=1, id=self.notifications_id)
+        self.scheduler.add_job(self.set_active_notifications, 'interval', seconds=30, id=self.notifications_id)
         self.scheduler.add_job(self.check_tracking_model, 'interval', hours=12, id=self.stock_tracking_id)
         self.scheduler.add_job(self.check_notifications_analyst, 'interval', days=1, id=self.analyst_rec_id)
 
@@ -120,7 +120,7 @@ class NotificationsScheduler:
                     rn = ReadyNotification(user=user, description=description, company_symbol=symbol)
                     rn.save()
                     notification.delete()
-                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time))
+                    send_to_socket(user, rn.company_symbol, rn.description, str(rn.time.replace(microsecond=0)))
                 else:
                     notification.last_checked = now()
                     notification.save()

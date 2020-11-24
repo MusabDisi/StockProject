@@ -16,8 +16,8 @@
                 margin-bottom: 0.4rem;"/>
     <div class="row ml-2 p-1 align-items-center">
         <a style="color: red; margin-right: 10px; padding-right: 10px; border-right: 1px solid rgba(0,0,0,.2);" href="{% url 'delete_active_notification' pk=notif.id %}">delete</a> 
-        <h6 style="padding-right: 10px; margin-bottom: 0px;">Change in <a
-                href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a> => {{notif.description}}</h6>
+        <p style="padding-right: 10px; margin-bottom: 0px;">Change in <a
+                href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a> => {{notif.description}}</p>
         <small>{{notif.time}}</small>
     </div>
     {%endfor%}
@@ -29,7 +29,7 @@
     </div>
     {%if tracking_notifs.count == 0%}
     <div class="row ml-3">
-        <h6>- No Tracking Notifications</h6>
+        <p>- No Tracking Notifications</p>
     </div>
     {%else%}
     {%for notif in tracking_notifs%}
@@ -37,10 +37,10 @@
                 margin-bottom: 0.4rem;"/>
     <div class="row ml-2 p-1 align-items-center">
         <a style="color: red; margin-right: 10px; padding-right: 10px; border-right: 1px solid rgba(0,0,0,.2);" href="{% url 'delete_tracking_notification' pk=notif.id %}">delete</a> 
-        <h6 style="margin-bottom: 0px;">Track <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
-        </h6>
-        <h6 style="padding-left: 5px; margin-bottom: 0px;">for <span style="color: tomato;">{{notif.weeks}}</span>
-        <span> week(s)</span></h6>
+        <p style="margin-bottom: 0px;">Track <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
+        </p>
+        <p style="padding-left: 5px; margin-bottom: 0px;">for <span style="color: tomato;">{{notif.weeks}}</span>
+        <span> week(s)</span></p>
     </div>
     {%endfor%}
     {%endif%}
@@ -51,7 +51,7 @@
     </div>
     {%if analyst_notifs.count == 0%}
     <div class="row ml-3">
-        <h6>- No Notifications</h6>
+        <p>- No Notifications</p>
     </div>
     {%else%}
     {%for notif in analyst_notifs%}
@@ -59,10 +59,10 @@
                 margin-bottom: 0.4rem;"/>
     <div class="row ml-2 p-1 align-items-center">
         <a style="color: red; margin-right: 10px; padding-right: 10px; border-right: 1px solid rgba(0,0,0,.2);" href="{% url 'delete_analyst_notification' pk=notif.id %}">delete</a> 
-        <h6 style="margin-bottom: 0px;">For <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
-        </h6>
-        <h6 style="padding-left: 5px; margin-bottom: 0px;">Notify me when <span style="color: tomato;">Scale Rate</span> is {{notif.operator}} than <span
-            style="color: tomato;">{{notif.value}}</span></h6>
+        <p style="margin-bottom: 0px;">For <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
+        </p>
+        <p style="padding-left: 5px; margin-bottom: 0px;">Notify me when <span style="color: tomato;">Scale Rate</span> is {{notif.operator}} than <span
+            style="color: tomato;">{{notif.value}}</span></p>
     </div>
     {%endfor%}
     {%endif%}
@@ -73,7 +73,7 @@
     </div>
     {%if waiting_notifs.count == 0%}
     <div class="row ml-3">
-        <h6>- No Waiting Notifications</h6>
+        <p>- No Waiting Notifications</p>
     </div>
     {%else%}
     {%for notif in waiting_notifs%}
@@ -81,10 +81,10 @@
                 margin-bottom: 0.4rem;"/>
     <div class="row ml-2 p-1 align-items-center">
         <a style="color: red; margin-right: 10px; padding-right: 10px; border-right: 1px solid rgba(0,0,0,.2);" href="{% url 'delete_waiting_notification' pk=notif.id %}">delete</a> 
-        <h6 style="margin-bottom: 0px;">For <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
-        </h6>
-        <h6 style="padding-left: 5px; margin-bottom: 0px;">Notify me when <span style="color: tomato;">{{notif.operand}}</span> is {{notif.operator}} than <span
-            style="color: tomato;">{{notif.value}}</span></h6>
+        <p style="margin-bottom: 0px;">For <a href="/stock/{{ notif.company_symbol }}">{{notif.company_symbol}}</a>
+        </p>
+        <p style="padding-left: 5px; margin-bottom: 0px;">Notify me when <span style="color: tomato;">{{notif.operand}}</span> is {{notif.operator}} than <span
+            style="color: tomato;">{{notif.value}}</span></p>
     </div>
     {%endfor%}
     {%endif%}

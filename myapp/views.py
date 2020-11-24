@@ -40,6 +40,7 @@ def index(request):
         'favorite_stocks': serializers.serialize('json', favorite_stocks),
     })
 
+
 @login_required
 def favorite_stock(request):
     user = request.user
@@ -54,6 +55,7 @@ def favorite_stock(request):
 def compare(request):
     return render(request, 'compare.html', {'stocks': request.GET.get('symbols')})
 
+
 @login_required
 def exchange(request):
     if not request.user.is_authenticated:
@@ -65,6 +67,7 @@ def exchange(request):
                   {'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
                    'stocks': serializers.serialize('json', stocks),
                    'user_budget': user_stocks.budget})
+
 
 # View for the single stock page
 # symbol is the requested stock's symbol ('AAPL' for Apple)
@@ -93,6 +96,7 @@ def single_stock(request, symbol):
     return render(request, 'single_stock.html', {'page_title': 'Stock Page - %s' % symbol, 'data': data,
                                                  'rec': rec, 'is_favorite': is_favorite}, )
 
+
 def portfolio(request):
     if not request.user.is_authenticated:
         return redirect(reverse('login'))
@@ -101,11 +105,13 @@ def portfolio(request):
     user_stocks = UserStock.objects.get(user_id=user.id)
     user_stocks_history = UserStockHistory.objects.get(user_id=user.id)
     return render(request, 'portfolio.html',
-                    {'page_title': 'Portfolio',
-                    'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
-                    'user_stocks_history': serializers.serialize('json', user_stocks_history.stock_operation_history.all()),
-                    'user_budget': user_stocks.budget,
-                    'stocks': serializers.serialize('json', stocks)})
+                  {'page_title': 'Portfolio',
+                   'user_stocks': serializers.serialize('json', user_stocks.stock_buyied.all()),
+                   'user_stocks_history': serializers.serialize('json',
+                                                                user_stocks_history.stock_operation_history.all()),
+                   'user_budget': user_stocks.budget,
+                   'stocks': serializers.serialize('json', stocks)})
+
 
 def register(request):
     # If post -> register the user and redirect to main page
@@ -195,7 +201,7 @@ def buy_stock(request):
         user_stock_info.save()
         # add to history
         stock_history = StockOperationHistory.objects.create(
-                stock=stock, stock_number=stock_number, stock_price=float(stock.price), stock_operation=True)
+            stock=stock, stock_number=stock_number, stock_price=float(stock.price), stock_operation=True)
         stock_history.save()
         user_stock_history.stock_operation_history.add(stock_history)
         user_stock_history.save()
@@ -217,7 +223,7 @@ def buy_stock(request):
         user_stock_info.save()
         # add to history
         stock_history = StockOperationHistory.objects.create(
-                stock=stock, stock_number=stock_number, stock_price=float(stock.price), stock_operation=False)
+            stock=stock, stock_number=stock_number, stock_price=float(stock.price), stock_operation=False)
         stock_history.save()
         user_stock_history.stock_operation_history.add(stock_history)
         user_stock_history.save()
@@ -269,7 +275,6 @@ def change_password(request):
 def logout_view(request):
     logout(request)
     return redirect('index')
-
 
 
 # API for a stock's price over time
