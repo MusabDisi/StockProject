@@ -7,6 +7,7 @@ class Command(BaseCommand):
         management.call_command('makemigrations')
         management.call_command('migrate')
         management.call_command('stock_manager')
+        management.call_command('get_crypto_data')
         management.call_command('load_companies_info')
         management.call_command('createcachetable')  # creates the table defined in settings/CACHES
 

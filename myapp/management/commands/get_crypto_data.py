@@ -10,13 +10,10 @@ from myapp.models import Stock, CryptoCurrency
 # It will run 'handle' function
 class Command(BaseCommand):
     def update_top_stocks(self):
-        print('requesting stocks from api ...')
-        top_stocks = stock_api._get_top_stocks()
         print('requesting crypto from api ...')
         top_crypto = stock_api.get_top_crypto()
 
         print('Writing to django DB')
-        self.add_stocks(top_stocks)
         self.add_crypto(top_crypto)
         print('You are all set!')
 
@@ -24,23 +21,6 @@ class Command(BaseCommand):
     # Updates the db according to the IEX console stock API.
     def handle(self, *args, **kwargs):
         self.update_top_stocks()
-
-    def add_stocks(self, top_stocks):
-        index = 1
-        for stock in progressBar(top_stocks, '\tLoading stocks', 'Complete'):
-            # This searches for a stock with the given 'symbol' (the primary key)
-            # and updates/create it with the values specified in the 'defaults' parameter
-            stock_model, created = Stock.objects.update_or_create(symbol=stock['symbol'], defaults={
-                'name': stock['companyName'],
-                'top_rank': index,
-                'price': stock['latestPrice'],
-                'change': stock['change'],
-                'change_percent': stock['changePercent'],
-                'market_cap': stock['marketCap'],
-                'primary_exchange': stock['primaryExchange'],
-            })
-            stock_model.save()
-            index += 1
 
     def add_crypto(self, top_crypto):
         index = 1
