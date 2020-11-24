@@ -1,6 +1,10 @@
-import requests
+from datetime import datetime
 
+import requests
 # Sandbox API - FOR TESTING
+from django.http import JsonResponse
+from django.utils.timezone import make_aware
+
 BASE_URL_SANDBOX = 'https://sandbox.iexapis.com'
 PUBLIC_TOKEN_SANDBOX = 'Tpk_31522a5f3a3f40c5a08af821908adf96'
 
@@ -61,14 +65,6 @@ def _get_top_stocks():
                          additional_parameters={'displayPercent': 'true', 'listLimit': '100000'})
 
 
-# def _get_all_stocks():
-#     return _request_data('/stable/stock/market/list/mostactive',
-#                          filter='symbol,companyName,latestVolume,change,changePercent,primaryExchange,marketCap,'
-#                                 'latestPrice,calculationPrice',
-#                          additional_parameters={'displayPercent': 'true', 'listLimit': '40'})
-#
-
-
 def get_stock_info(symbol):
     # 'symbol,companyName,marketCap,totalCash,primaryExchange,latestPrice,latestSource,change,changePercent'
     return _request_data_sandbox('/stable/stock/{symbol}/quote'.format(symbol=symbol),
@@ -84,6 +80,10 @@ def get_stock_historic_prices(symbol, time_range='1m', filter=''):
                                  filter=filter)
 
 
+def get_top_crypto():
+    return _request_data_sandbox('/stable/ref-data/crypto/symbols')
+
+
 def get_stock_info_notification(symbol, operand):
     return _request_data_sandbox('/stable/stock/{symbol}/quote'.format(symbol=symbol),
                                  additional_parameters={'displayPercent': 'true'},
@@ -92,3 +92,19 @@ def get_stock_info_notification(symbol, operand):
 
 def get_analyst_recommendations(symbol):
     return _request_data_sandbox('/stable/stock/{symbol}/recommendation-trends'.format(symbol=symbol))
+
+
+def crypto_historic(req, symbol='BTCUSD'):
+    result = []
+    data = _request_data_sandbox('/stable/crypto/{}/book'.format(symbol))['bids'][0:20]
+    for datum in data:
+        result.append({
+            'price': datum['price'],
+            'timestamp': str(make_aware(datetime.fromtimestamp(datum['timestamp'] / 1000)))[0:10]
+        })
+
+    return JsonResponse(result, safe=False)
+
+
+def crypto_details(symbol):
+    return _request_data_sandbox('/stable/crypto/{}/quote'.format(symbol))

@@ -1,7 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.timezone import now
-import datetime
 
 
 # Create your models here.
@@ -14,6 +13,13 @@ class Stock(models.Model):
     change_percent = models.FloatField()
     market_cap = models.FloatField(null=True)
     primary_exchange = models.CharField(null=True, max_length=32)
+
+
+class CryptoCurrency(models.Model):
+    rank = models.IntegerField(null=True)
+    symbol = models.CharField(max_length=12, primary_key=True)
+    name = models.CharField(max_length=64)
+    currency = models.CharField(max_length=64)
 
 
 class UserProfile(models.Model):

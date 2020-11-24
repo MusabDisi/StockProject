@@ -1,15 +1,17 @@
-from django.http import request
-from django.core.paginator import Paginator
-from django.http import QueryDict
-from django.urls import reverse
+import pathlib
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.files.storage import FileSystemStorage
-import pathlib
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.http import QueryDict
 from django.shortcuts import render, redirect, HttpResponse
+from django.urls import reverse
+from django.utils.timezone import make_aware
+
 from myapp import stock_api
 from myapp.models import *
 
@@ -38,6 +40,23 @@ def index(request):
         'notifications': notifications,
         'number_of_notifs': number_of_notifs,
         'favorite_stocks': serializers.serialize('json', favorite_stocks),
+    })
+
+
+def crypto(request):
+    data = CryptoCurrency.objects.filter(rank__isnull=False).order_by('rank')
+    data_json = serializers.serialize('json', data)
+    return render(request, 'crypto.html', {'data': data_json})
+
+
+def crypto_details(request, symbol='BTCUSD'):
+    data = stock_api.crypto_details(symbol)
+    return render(request, 'crypto_details.html', {
+        'latestPrice': data['latestPrice'],
+        'symbol': data['symbol'],
+        'source': data['latestSource'],
+        'latestUpdate': make_aware(datetime.fromtimestamp(data['latestUpdate'] / 1000)),
+        'latestVolume': data['latestVolume']
     })
 
 
@@ -310,21 +329,6 @@ def stocks_names_and_symbols(request):
     for datum in data:
         result.append('{} - {}'.format(datum.symbol, datum.name))
     return JsonResponse({'data': result}, content_type="application/json")
-
-
-def add_notification(request):
-    print('received')
-    if request.method == "POST":
-        print('posting', request.POST)
-        if request.user.is_authenticated:
-            notification = Notification(user=request.user, operator=request.POST.get('operator').strip()
-                                        , operand=request.POST.get('operand').strip()
-                                        , value=request.POST.get('value').strip()
-                                        , company_symbol=request.POST.get('company_symbol').strip())
-
-            notification.save()
-
-    return HttpResponse(status=HTTP_204_NO_CONTENT)
 
 
 @login_required
