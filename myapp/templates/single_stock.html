@@ -2,6 +2,13 @@
 
 {% block content %}
 {%include 'popup_modal/notif_toast.html'%}
+<style>
+	.nav-pills .nav-link.active,
+	.nav-pills .show>.nav-link {
+		color: #fff;
+		background-color: #dc3545;
+	}
+</style>
 <div class="row align-items-center pr-3">
 	<div class="col-9 col-md-9 text-left">
 		<h2 class="display-4">
@@ -10,16 +17,18 @@
 		</h2>
 	</div>
 	{% if user.is_authenticated %}
-		<div class="col-md-3" style="float: right !important;">
-			<button id="notify-me-btn" type="button" class="btn btn-outline-secondary  mr-2 mt-2 fa"
-				style="width: 100px;">Notify Me</button>
-			<button id="fav-me-btn" type="button" class="btn btn-outline-warning  mt-2 fa  {% if is_favorite%}fa-star{% endif %}" style="width: 100px;">  favorite</button>
-			{%include 'popup_modal/popup_modal.html'%}
-			
-		</div>
+	<div class="col-md-3" style="float: right !important;">
+		<button id="notify-me-btn" type="button" class="btn btn-outline-secondary  mr-2 mt-2 fa"
+			style="width: 100px;">Notify Me</button>
+		<button id="fav-me-btn" type="button"
+			class="btn btn-outline-warning  mt-2 fa  {% if is_favorite%}fa-star{% endif %}" style="width: 100px;">
+			favorite</button>
+		{%include 'popup_modal/popup_modal.html'%}
+
+	</div>
 	{% endif %}
 
-	
+
 </div>
 
 <!-- <div class="col-md-12 text-left">
@@ -173,12 +182,12 @@
 			$("#high-row").toggleClass('disabled_row');
 		});
 		$("#submit-btn").click(submitModal);
-		$('.toast').toast({delay:2000});
+		$('.toast').toast({ delay: 2000 });
 		initCompare();
 	});
 
 	function openModal() {
-		$("body").css({overflow: 'hidden'});
+		$("body").css({ overflow: 'hidden' });
 		// high low 
 		let high = "{{ data.high }}";
 		let low = "{{ data.low }}";
@@ -197,25 +206,27 @@
 
 	function setFav() {
 		var method = 'PUT'
-        if ($("#fav-me-btn").hasClass('fa-star')) {
-            method = 'DELETE'
-        }
-				let low2 = "{{ is_favorite }}";
-				console.log(`the method is ${method}  value ${low2}`)
-        $.ajax({
-            url: "{% url 'edit_fav_stock' %}",
-            headers: { "X-CSRFToken": '{{csrf_token}}' },
-            method: method,
-            data: {
-                'symbol': symbol
-            },
-            dataType: 'json',
-            success: function (data) {
-               $("#fav-me-btn").toggleClass('fa-star')}});
+		if ($("#fav-me-btn").hasClass('fa-star')) {
+			method = 'DELETE'
+		}
+		let low2 = "{{ is_favorite }}";
+		console.log(`the method is ${method}  value ${low2}`)
+		$.ajax({
+			url: "{% url 'edit_fav_stock' %}",
+			headers: { "X-CSRFToken": '{{csrf_token}}' },
+			method: method,
+			data: {
+				'symbol': symbol
+			},
+			dataType: 'json',
+			success: function (data) {
+				$("#fav-me-btn").toggleClass('fa-star')
+			}
+		});
 	}
 
 	function closeModal() {
-		$("body").css({overflow: 'visible'});
+		$("body").css({ overflow: 'visible' });
 		$("#notifications-modal").css({ display: 'none' });
 	}
 
@@ -361,8 +372,8 @@
 					{
 						label: symbol,
 						data: data,
-						backgroundColor: 'rgba(105, 0, 132, .2)',
-						borderColor: 'rgba(200, 99, 132, .7)',
+						backgroundColor: '',
+						borderColor: '#dc3545',
 						borderWidth: 2,
 					}
 				]

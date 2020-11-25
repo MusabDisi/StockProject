@@ -11,7 +11,7 @@ from . import views, views_ajax
 urlpatterns = [
     path('', views.index, name='index'),
     path('crypto/', views.crypto, name='crypto'),
-    path('crypto_details/<str:symbol>', views.crypto_details, name='crypto_details'),
+    path('crypto/crypto_details/<str:symbol>', views.crypto_details, name='crypto_details'),
     path('exchange/', views.exchange, name='exchange'),
     path('portfolio/', views.portfolio, name='portfolio'),
     path('compare/', views.compare, name='compare'),
