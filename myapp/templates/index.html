@@ -1,14 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-
+<!-- for icons -->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 {%include 'popup_modal/notif_toast.html'%}
-<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
-	<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
-		<i class="material-icons" id="searchIcon">search</i>
-	</label>
-	<div class="mdl-textfield__expandable-holder">
-		<input class="mdl-textfield__input" type="text" id="searchFeild" placeholder="Search">
-		<label class="mdl-textfield__label"></label>
+
+<!-- 
+	<div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable">
+		<label class="mdl-button mdl-js-button mdl-button--icon" for="searchFeild">
+			<i class="material-icons" id="searchIcon">search</i>
+		</label>
+		<div class="mdl-textfield__expandable-holder">
+			<input class="mdl-textfield__input" type="text" id="searchFeild" placeholder="Search">
+			<label class="mdl-textfield__label"></label>
+		</div>
+	</div> -->
+
+<!-- Search -->
+<div class="row mb-4 mt-2  justify-content-center align-items-center">
+	<div class="input-group" style="width: 50%;"> 
+		<input  id="searchFeild" type="text" class="form-control" placeholder="Search">
+		<div class="input-group-append"><button class="btn btn-danger"><i class="fas fa-search"></i></button></div>
 	</div>
 </div>
 
@@ -22,14 +33,15 @@
 		width: 100%;
 	}
 
-	#searchFeild {
+	/* #searchFeild {
 		padding-bottom: 8px;
 		border: none;
-	}
+	} */
 
 	#searchIcon {
 		color: #3492eb;
 	}
+	
 </style>
 
 <!-- HANDLE NOTIFICATIONS WEBSOCKET CONNECTION -->
@@ -44,12 +56,12 @@
 		console.log(webSocketEndpoint);
 
 		var socket = new WebSocket(webSocketEndpoint) // Creating a new Web Socket Connection
-		socket.onmessage = (e)=>onMessage(e);
-		socket.onopen = (e)=> onOpen(e);
-		socket.onerror = (e)=>onError(e);
-		socket.onclose =(e)=> onClose(e);
-		$('.toast').toast({delay:5000});
-	})	
+		socket.onmessage = (e) => onMessage(e);
+		socket.onopen = (e) => onOpen(e);
+		socket.onerror = (e) => onError(e);
+		socket.onclose = (e) => onClose(e);
+		$('.toast').toast({ delay: 5000 });
+	})
 
 	// Socket On receive message Functionality
 	function onMessage(e) {
@@ -61,14 +73,14 @@
 		//clone element to resuse later
 		$('#dropdown-notifs #notifs #dropdown-element').first().clone().prependTo($('#dropdown-notifs #notifs'));
 
-		if (count >= 5){
+		if (count >= 5) {
 			// remove last element
 			$('#dropdown-notifs #notifs #dropdown-element').last().remove();
 		}
 
 		// update clone
-		$('#dropdown-notifs #notifs #dropdown-element:first-child').css({display:'inline'});
-		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-title a').attr('href','/stock/'+message['company_symbol']);
+		$('#dropdown-notifs #notifs #dropdown-element:first-child').css({ display: 'inline' });
+		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-title a').attr('href', '/stock/' + message['company_symbol']);
 		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-title a').text(message['company_symbol']);
 		$('#dropdown-notifs #notifs #dropdown-element:first-child .notification-desc').text(message['description'])
 		$('#dropdown-notifs #notifs #dropdown-element:first-child .timestamp').text(message['time'])
@@ -76,8 +88,8 @@
 		//update count
 		count++;
 		$("#number-of-notifs").text(count);
-		if(count > 5){
-			$('#dropdown-notifs #show-all').css({display:'block'});
+		if (count > 5) {
+			$('#dropdown-notifs #show-all').css({ display: 'block' });
 		}
 
 		// show toast
@@ -85,7 +97,7 @@
 		$("#toast-message").text(message['description']);
 		$("#notif-toast").toast('show');
 
-		
+
 	}
 
 	// Socket Connet Functionality

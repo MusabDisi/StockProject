@@ -51,8 +51,8 @@ class StockOperation(models.Model):
 
 class UserStock(models.Model):
     user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
-    stock_buyied = models.ManyToManyField(StockOperation)
-    budget = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    stock_buyied = models.ManyToManyField(StockOperation, null=True)
+    budget = models.DecimalField(default=0, max_digits=15, decimal_places=2)
 
 
 class TrackStock(models.Model):

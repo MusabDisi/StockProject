@@ -161,6 +161,7 @@ def register(request):
             fs = FileSystemStorage()
             fs.save(new_file_name, avatar)
             user_profile.save()
+
         return redirect('index')
     else:
         # If not post (regular request) -> render register page

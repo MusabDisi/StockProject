@@ -1,23 +1,47 @@
-{% extends "base.html" %} {% block content %}
-<div class="row">
-  <div class="pt-4 col-sm-6 pl-5">
-    <dl class="row text-left">
-      <dt class="col-sm-6">First Name</dt>
-      <dd class="col-sm-6">{{ user.first_name }}</dd>
+{% extends "base.html" %}
+{% load static %}
 
-      <dt class="col-sm-6">Last Name</dt>
-      <dd class="col-sm-6">{{ user.last_name }}</dd>
+{% block content %}
 
-      <dt class="col-sm-6">Email</dt>
-      <dd class="col-sm-6">{{ user.email }}</dd>
-    </dl>
-    <div class="pt-4 col-sm-6 pl-5">
-      <img src="{{media_url}}{{ avatar }}" width="250" height="300" />
-    </div>
-    <div class="pt-4 col-sm-6 pl-5">
-      <a class="btn btn-primary" href={% url 'edit_profile' %} role="button">Edit Profile</a>
+<div class="container-fluid">
+  <div class="row">
+    <div class="image-container">
+      <img src="{% static 'img/profile_ph.png' %}" style="width: 150px; height: 150px" class="img-thumbnail"
+        alt="image" />
     </div>
   </div>
+
+  <!-- User info -->
+  <div class="container-fluid pt-3 pl-0 pb-2">
+    <div class="row justify-content-start">
+      <div class="col-sm-3 col-md-2 col-5">
+        <label style="font-weight:bold; float: left; color: black;">First Name</label>
+      </div>
+      <div class="col-md-3 col-3">
+        <label style="font-weight:bold; float: left;">{{ user.first_name }}</label>
+      </div>
+    </div>
+    <div class="row justify-content-start">
+      <div class="col-sm-3 col-md-2 col-5">
+        <label style="font-weight:bold; float: left; color: black;">Last Name</label>
+      </div>
+      <div class="col-md-3 col-3">
+        <label style="font-weight:bold; float: left;">{{ user.last_name }}</label>
+      </div>
+    </div>
+    <div class="row justify-content-start">
+      <div class="col-sm-3 col-md-2 col-5 align-self-start">
+        <label style="font-weight:bold; float: left; color: black;">Email</label>
+      </div>
+      <div class="col-md-3 col-6">
+        <label style="font-weight:bold; float: left;">{{ user.email }}</label>
+      </div>
+    </div>
+  </div>
+  <div class="row pl-1">
+    <a class="btn btn-danger" href={% url 'edit_profile' %} role="button" style="float: left;">Edit Profile</a>
+  </div>
 </div>
+
 
 {% endblock %}
