@@ -99,11 +99,11 @@ def single_stock(request, symbol):
         recs_data = stock_api.get_analyst_recommendations(symbol)
         rec = recs_data[0]
         try:
-            rec['corporateActionsAppliedDate'] = datetime.datetime.fromtimestamp((
+            rec['corporateActionsAppliedDate'] = datetime.fromtimestamp((
                     rec['corporateActionsAppliedDate'] / 1000.0)).strftime("%Y-%m-%d")
         except TypeError:
             rec['corporateActionsAppliedDate'] = "Unavailable"
-    except Exception:
+    except Exception as e:
         rec = -1
     favorite = []
     if request.user.is_authenticated:

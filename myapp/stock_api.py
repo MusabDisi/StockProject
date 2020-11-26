@@ -53,6 +53,7 @@ def _request_data_sandbox(url, filter='', additional_parameters={}):
         query_strings['filter'] = filter
 
     response = requests.get(final_url, params=query_strings)
+
     if not response.ok:
         raise Exception('Unexpected response: ', response.__dict__)
     return response.json()
